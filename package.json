@@ -1,0 +1,32 @@
+{
+  "name": "open-ai-canvas-uniapp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write src tests docs package.json tsconfig.json vite.config.ts vitest.config.ts README.md THIRD_PARTY_NOTICES.md",
+    "format:check": "prettier --check src tests docs package.json tsconfig.json vite.config.ts vitest.config.ts README.md THIRD_PARTY_NOTICES.md"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-5020420260813003",
+    "@dcloudio/uni-components": "3.0.0-5020420260813003",
+    "@dcloudio/uni-mp-weixin": "3.0.0-5020420260813003",
+    "pinia": "2.1.7",
+    "vue": "3.4.21",
+    "vue-i18n": "9.14.5"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "3.4.31",
+    "@dcloudio/uni-cli-shared": "3.0.0-5020420260813003",
+    "@dcloudio/vite-plugin-uni": "3.0.0-5020420260813003",
+    "prettier": "3.6.2",
+    "typescript": "5.6.3",
+    "vite": "5.2.8",
+    "vitest": "2.1.9",
+    "vue-tsc": "2.2.0"
+  }
+}

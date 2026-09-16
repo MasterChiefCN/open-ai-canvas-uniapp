@@ -1,0 +1,13 @@
+{
+  "name": "Open AI Canvas",
+  "appid": "",
+  "description": "Open AI Canvas 微信小程序",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "vueVersion": "3",
+  "mp-weixin": {
+    "appid": "",
+    "setting": { "urlCheck": true, "es6": true, "minified": true },
+    "usingComponents": true
+  }
+}

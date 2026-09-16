@@ -1,0 +1,224 @@
+page {
+  background: #101217;
+  color: #f1f3f7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+view,
+text,
+input,
+textarea,
+button {
+  box-sizing: border-box;
+}
+button {
+  font-size: 28rpx;
+}
+button::after {
+  border: 0;
+}
+button[disabled] {
+  opacity: 0.38;
+}
+.page {
+  padding: 32rpx 30rpx calc(36rpx + env(safe-area-inset-bottom));
+  max-width: 960rpx;
+  margin: auto;
+}
+.eyebrow {
+  font-size: 20rpx;
+  letter-spacing: 4rpx;
+  color: #94a9c9;
+}
+.title {
+  font-size: 46rpx;
+  font-weight: 650;
+  line-height: 1.3;
+  margin: 14rpx 0 20rpx;
+}
+.subtitle,
+.muted {
+  color: #949cab;
+  font-size: 25rpx;
+}
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+.card {
+  background: #1a1d25;
+  border: 1rpx solid #2b303b;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin: 24rpx 0;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.between {
+  justify-content: space-between;
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+.stack > * + * {
+  margin-top: 20rpx;
+}
+.field {
+  margin-top: 24rpx;
+}
+.label {
+  display: block;
+  font-size: 25rpx;
+  color: #bfc6d3;
+  margin-bottom: 12rpx;
+}
+.input,
+.textarea,
+.select {
+  width: 100%;
+  background: #242832;
+  border: 1rpx solid #343a46;
+  border-radius: 14rpx;
+  color: #f6f7fa;
+  padding: 20rpx 22rpx;
+  min-height: 88rpx;
+}
+.input {
+  height: 88rpx;
+}
+.textarea {
+  height: 230rpx;
+}
+.primary {
+  background: #f3f5f8;
+  color: #141820;
+  border-radius: 14rpx;
+  min-height: 88rpx;
+  line-height: 88rpx;
+  font-weight: 600;
+  margin: 28rpx 0 0;
+  padding: 0 24rpx;
+}
+.secondary {
+  background: #2c3443;
+  color: #e0e8f6;
+  border-radius: 14rpx;
+  margin: 0;
+  padding: 12rpx 22rpx;
+  line-height: 1.5;
+}
+.link {
+  color: #b4cbef;
+  text-decoration: underline;
+  font-size: 26rpx;
+}
+.small {
+  font-size: 23rpx;
+}
+.error {
+  color: #ffc1bd;
+  background: #432a2e;
+  padding: 22rpx;
+  border-radius: 14rpx;
+  margin: 20rpx 0;
+  word-break: break-word;
+}
+.notice {
+  color: #b6c6df;
+  background: #212d40;
+  padding: 22rpx;
+  border-radius: 14rpx;
+  margin: 20rpx 0;
+}
+.empty {
+  text-align: center;
+  padding: 62rpx 20rpx;
+  color: #8995aa;
+}
+.chips {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin: 24rpx 0;
+}
+.chip {
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  background: #222731;
+  color: #9ea9bb;
+  font-size: 25rpx;
+}
+.chip.active {
+  background: #dce8ff;
+  color: #1b2942;
+}
+.separator {
+  height: 1rpx;
+  background: #303541;
+  margin: 24rpx 0;
+}
+.pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tag {
+  font-size: 22rpx;
+  color: #a7c2ff;
+}
+.amount {
+  font-size: 64rpx;
+  font-weight: 650;
+  letter-spacing: -2rpx;
+}
+.positive {
+  color: #8cdbc0;
+}
+.negative {
+  color: #e4b4b1;
+}
+.auth {
+  padding-top: 9vh;
+}
+.auth-brand {
+  margin-bottom: 48rpx;
+  color: #b6c9e7;
+  font-size: 24rpx;
+  letter-spacing: 2rpx;
+}
+.auth .card {
+  padding: 36rpx;
+}
+.auth-links {
+  margin-top: 30rpx;
+  display: flex;
+  justify-content: space-between;
+}
+.password {
+  position: relative;
+}
+.password .input {
+  padding-right: 125rpx;
+}
+.reveal {
+  position: absolute;
+  right: 20rpx;
+  top: 22rpx;
+  font-size: 24rpx;
+  color: #adbedb;
+}
+.media-image {
+  width: 100%;
+  border-radius: 16rpx;
+  background: #0e1117;
+}
+.footer-note {
+  padding: 28rpx 0;
+  color: #78859a;
+  font-size: 22rpx;
+  text-align: center;
+}

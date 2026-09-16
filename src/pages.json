@@ -1,0 +1,58 @@
+{
+  "pages": [
+    {
+      "path": "pages/create/index",
+      "style": { "navigationBarTitleText": "Open AI Canvas" }
+    },
+    {
+      "path": "pages/tasks/index",
+      "style": {
+        "navigationBarTitleText": "任务",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/wallet/index",
+      "style": {
+        "navigationBarTitleText": "积分",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/tasks/detail",
+      "style": {
+        "navigationBarTitleText": "任务详情",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/auth/login",
+      "style": { "navigationBarTitleText": "登录" }
+    },
+    {
+      "path": "pages/auth/register",
+      "style": { "navigationBarTitleText": "注册" }
+    },
+    {
+      "path": "pages/auth/forgot-password",
+      "style": { "navigationBarTitleText": "找回密码" }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#101217",
+    "backgroundColor": "#101217",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8d99ae",
+    "selectedColor": "#dce8ff",
+    "backgroundColor": "#171b24",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/create/index", "text": "创作" },
+      { "pagePath": "pages/tasks/index", "text": "任务" },
+      { "pagePath": "pages/wallet/index", "text": "积分" }
+    ]
+  }
+}
