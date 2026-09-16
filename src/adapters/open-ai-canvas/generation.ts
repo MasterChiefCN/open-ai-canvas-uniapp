@@ -1,5 +1,6 @@
 import type { Model, ImageReference, MediaReferences } from '../../types/backend';
 import { validateModel, operationFor } from './model-capabilities';
+import { clientSource } from '../../core/runtime';
 export type HistoryMessage = { role: 'user' | 'assistant'; content: string };
 export function generationPayload(
   model: Model,
@@ -44,7 +45,7 @@ export function generationPayload(
       referenceAudios: media.audios,
       textHistory: history,
       ...(model.mode === 'text' ? { textOptions: { stream: true, thinking: false } } : {}),
-      metadata: { source: 'uniapp-wechat', ...metadata },
+      metadata: { source: clientSource(), ...metadata },
     },
   };
 }

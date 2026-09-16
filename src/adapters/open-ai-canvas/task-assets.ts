@@ -12,9 +12,11 @@ export function generationAssetIdentity(taskId: string, index: number) {
   const effectKey = `materialize:${taskId}:${index}`;
   return { effectKey, id: `generation_${sha256(effectKey)}` };
 }
-export function isMiniProgramTask(task: Task): boolean {
+export function isUniAppTask(task: Task): boolean {
   try {
-    return JSON.parse(task.inputJson || '{}')?.metadata?.source === 'uniapp-wechat';
+    return ['uniapp-wechat', 'uniapp-app'].includes(
+      JSON.parse(task.inputJson || '{}')?.metadata?.source,
+    );
   } catch {
     return false;
   }

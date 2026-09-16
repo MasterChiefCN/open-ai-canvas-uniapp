@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["@dcloudio/types"],
+    "types": ["@dcloudio/types", "html5plus"],
     "lib": ["ES2020", "DOM"],
     "baseUrl": ".",
     "paths": { "@/*": ["src/*"] }

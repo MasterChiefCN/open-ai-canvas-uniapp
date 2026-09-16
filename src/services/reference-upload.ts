@@ -1,4 +1,6 @@
 import { reactive } from 'vue';
+import { clientSource, isNativeApp } from '../core/runtime';
+import { chooseNativeAudio } from './native-audio';
 import { assetApi, type LibraryAsset } from '../api/assets';
 import { resourceApi } from '../api/resources';
 import { ApiError, assertEpoch, requestEpoch } from '../core/http';
@@ -74,7 +76,7 @@ export function syncReferenceAsset(record: UploadRecord): Promise<void> {
           updatedAt: createdAt,
           metadata: {
             source: 'create-upload',
-            client: 'uniapp-wechat',
+            client: clientSource(),
             resourceId: id,
             fileName: name,
           },
@@ -171,6 +173,7 @@ export async function uploadReference(
 }
 
 export type SelectedReference = {
+  cleanup?: () => void;
   path: string;
   name: string;
   size: number;
@@ -181,7 +184,9 @@ export type SelectedReference = {
 export async function chooseReferences(
   kind: MediaKind,
   count: number,
+  maxBytes = 50 * 1024 * 1024,
 ): Promise<SelectedReference[]> {
+  if (count <= 0) return [];
   if (kind === 'image') {
     const selected = await new Promise<UniApp.ChooseImageSuccessCallbackResult>((success, fail) =>
       uni.chooseImage({ count: Math.min(9, count), sizeType: ['compressed'], success, fail }),
@@ -211,6 +216,7 @@ export async function chooseReferences(
       },
     ];
   }
+  if (isNativeApp()) return chooseNativeAudio(maxBytes);
   const selected = await new Promise<UniApp.ChooseMessageFileSuccessCallbackResult>(
     (success, fail) =>
       uni.chooseMessageFile({

@@ -10,6 +10,7 @@ pnpm typecheck
 pnpm test
 pnpm build:mp-weixin
 pnpm check:wxss
+pnpm build:app
 ```
 
 不要混用包管理器和锁文件。`pnpm-workspace.yaml` 允许 esbuild 与 vue-demi 的安装构建脚本；core-js 的安装提示脚本关闭。不需要初始化数据库、BFF 或 uniCloud。
@@ -25,6 +26,8 @@ HTTPS 或占位地址检查失败时显示配置提示，不尝试外部连接�
 新实例使用不同缓存命名空间。账号缓存进一步按用户 ID 隔离，退出会清除当前用户的本地草稿与任务 ID；服务端作品不受影响。
 
 ## 微信配置
+
+Android/iOS 原生 App 的配置及签名打包见 [App 部署说明](app.md)。以下微信合法域名配置只用于微信小程序。
 
 1. 将微信 AppID 填入 `src/manifest.json` 的 `mp-weixin.appid`。顶层 `appid` 是 DCloud 应用标识，不是微信 AppID。
 2. 微信公众平台配置 API 的 request/uploadFile 合法域名；downloadFile 合法域名需包含实际 OSS/CDN 域名。

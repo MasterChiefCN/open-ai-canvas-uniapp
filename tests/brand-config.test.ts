@@ -48,7 +48,7 @@ it('preserves Chinese, mixed text and JSON special characters without changing u
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
     f.manifest.name = name;
-    f.manifest.description = `${name} 微信小程序`;
+    f.manifest.description = `${name} AI 创作客户端`;
     const pagesText = readFileSync(join(f.root, 'src/pages.json'), 'utf8');
     expect(pagesText).toBe(JSON.stringify(f.pages));
     expect(JSON.parse(pagesText)).toEqual(f.pages);

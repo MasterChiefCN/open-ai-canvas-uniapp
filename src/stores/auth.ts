@@ -60,7 +60,7 @@ export const useAuth = defineStore('auth', () => {
   async function authenticate(action: () => Promise<unknown>) {
     clear();
     await action();
-    if (!(await restore())) throw new Error('登录未建立有效会话，请检查小程序 Cookie 配置');
+    if (!(await restore())) throw new Error('登录未建立有效会话，请检查后端 Cookie 配置');
     uni.switchTab({ url: '/pages/create/index' });
   }
   async function logout() {

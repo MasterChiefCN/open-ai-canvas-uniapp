@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { uni } from '../../core/platform';
+import { audioPickerHint } from '../../core/runtime';
 import { modelApi } from '../../api/models';
 import {
   chooseReferences,
@@ -8,6 +9,7 @@ import {
   referenceUploadStates,
   syncReferenceAsset,
   resumeReferenceAssets,
+  type SelectedReference,
 } from '../../services/reference-upload';
 import { mediaDimensions } from '../../services/asset-sync';
 import { useAuth, onSessionReset } from '../../stores/auth';
@@ -179,18 +181,19 @@ async function addReference(kind: MediaKind) {
     (kind === 'image' ? references.value.length : items.length);
   if (remaining <= 0) return;
   uploading.value = true;
+  let files: SelectedReference[] = [];
   try {
-    const files = await chooseReferences(kind, remaining);
+    const runtimeMax = (auth.session.runtimeLimits?.resourceUploadMB || 50) * 1024 * 1024;
+    const modelMax =
+      kind === 'image'
+        ? model.maxImageBytes
+        : kind === 'video'
+          ? model.maxVideoBytes
+          : model.maxAudioBytes;
+    const limit = modelMax ? Math.min(runtimeMax, modelMax) : runtimeMax;
+    files = await chooseReferences(kind, remaining, limit);
     for (const file of files.slice(0, remaining)) {
       assertEpoch(epoch);
-      const runtimeMax = (auth.session.runtimeLimits?.resourceUploadMB || 50) * 1024 * 1024;
-      const modelMax =
-        kind === 'image'
-          ? model.maxImageBytes
-          : kind === 'video'
-            ? model.maxVideoBytes
-            : model.maxAudioBytes;
-      const limit = modelMax ? Math.min(runtimeMax, modelMax) : runtimeMax;
       if (file.size > limit)
         throw new Error(`参考素材超出上传限制（${Math.floor(limit / 1024 / 1024)} MB）`);
       const durationMax = model.rawCapabilities?.[model.mode]?.references;
@@ -242,6 +245,7 @@ async function addReference(kind: MediaKind) {
     )
       notifyError(failure);
   } finally {
+    files.forEach((file) => file.cleanup?.());
     uploading.value = false;
   }
 }
@@ -416,7 +420,7 @@ function newConversation() {
               <text class="muted small">{{ group.items.length }}/{{ group.max }}</text>
             </view>
             <view class="muted small">
-              {{ group.kind === 'audio' ? '从微信聊天文件选择音频' : '从相册选择视频' }}
+              {{ group.kind === 'audio' ? audioPickerHint() : '从相册选择视频' }}
             </view>
           </view>
           <button

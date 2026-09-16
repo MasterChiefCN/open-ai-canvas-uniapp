@@ -1,10 +1,45 @@
 {
   "name": "Open AI Canvas",
   "appid": "",
-  "description": "Open AI Canvas 微信小程序",
+  "description": "Open AI Canvas AI 创作客户端",
   "versionName": "0.1.0",
   "versionCode": "100",
   "vueVersion": "3",
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "runmode": "liberate",
+    "screenOrientation": ["portrait-primary", "landscape-primary", "landscape-secondary"],
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "safearea": { "background": "#080f19", "bottom": { "offset": "auto" } },
+    "statusbar": { "style": "light", "background": "#080f19" },
+    "modules": { "Camera": {}, "VideoPlayer": {} },
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+          "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+          "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+          "<uses-permission android:name=\"android.permission.READ_MEDIA_IMAGES\"/>",
+          "<uses-permission android:name=\"android.permission.READ_MEDIA_VIDEO\"/>",
+          "<uses-permission android:name=\"android.permission.READ_MEDIA_VISUAL_USER_SELECTED\"/>"
+        ]
+      },
+      "ios": {
+        "privacyDescription": {
+          "NSPhotoLibraryUsageDescription": "用于选择创作所需的参考图片和视频",
+          "NSPhotoLibraryAddUsageDescription": "用于将生成的图片和视频保存到相册",
+          "NSCameraUsageDescription": "用于拍摄创作所需的参考图片"
+        }
+      }
+    }
+  },
   "mp-weixin": {
     "appid": "",
     "setting": { "urlCheck": true, "es6": true, "minified": true },

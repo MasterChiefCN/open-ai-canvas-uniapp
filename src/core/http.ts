@@ -1,5 +1,6 @@
 import { configurationError, apiUrl } from './urls';
 import { cookieHeader, receiveCookies } from './session';
+import { clearNativeCookies } from './runtime';
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -88,6 +89,8 @@ export function request<T>(
       header: { ...headers, ...cookieHeader(), 'Content-Type': 'application/json' },
       success(response) {
         try {
+          // 即使响应属于已切换的账号，也不能让原生容器保留迟到的 Cookie。
+          clearNativeCookies();
           assertEpoch(captured);
           receiveCookies(response.cookies, response.header);
           resolve(unwrap<T>(response.data, response.statusCode, response.header));
@@ -131,6 +134,7 @@ export function upload<T>(
       timeout: 60000,
       success(response) {
         try {
+          clearNativeCookies();
           assertEpoch(captured);
           const extra = response as typeof response & {
             cookies?: string[];

@@ -8,7 +8,7 @@ import { apiUrl, resourceUrl } from '../core/urls';
 import { storage } from '../core/storage';
 import {
   generationAssetIdentity,
-  isMiniProgramTask,
+  isUniAppTask,
   taskAssetOutputs,
   type AssetOutput,
 } from '../adapters/open-ai-canvas/task-assets';
@@ -180,7 +180,7 @@ export function syncTaskAssets(task: Task, knownCreated = false, retry = false):
       // when a task completed while the mini program was closed.
       const full = task.inputJson && task.resultJson ? task : await taskApi.get(task.id);
       assertEpoch(epoch);
-      if (!knownCreated && !isMiniProgramTask(full)) {
+      if (!knownCreated && !isUniAppTask(full)) {
         assetSyncStates[task.id] = { status: 'skipped' };
         return;
       }

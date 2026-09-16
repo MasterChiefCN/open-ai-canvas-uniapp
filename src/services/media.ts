@@ -1,4 +1,5 @@
 import { resourceApi } from '../api/resources';
+import { albumPermissionMessage } from '../core/runtime';
 import { resourceUrl } from '../core/urls';
 import { assertEpoch, requestEpoch } from '../core/http';
 import type { MediaResult } from '../adapters/open-ai-canvas/task-result';
@@ -30,7 +31,7 @@ export async function saveMedia(media: MediaResult) {
         reject(
           new Error(
             /auth|deny|permission/i.test(error.errMsg)
-              ? '没有相册权限，请在小程序设置中允许保存'
+              ? albumPermissionMessage()
               : '保存失败，请检查设备空间或媒体格式',
           ),
         ),

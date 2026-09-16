@@ -1,4 +1,5 @@
 import { storage } from './storage';
+import { clearNativeCookies, isNativeApp } from './runtime';
 export const cookieName = 'open_ai_canvas_session';
 export type SessionCookie = { value: string; expiresAt?: number };
 export function parseSessionCookies(
@@ -38,18 +39,22 @@ export function receiveCookies(cookies: string[] = [], headers: Record<string, u
     if (key.toLowerCase() === 'set-cookie')
       lines.push(...(Array.isArray(value) ? value.map(String) : [String(value)]));
   const parsed = parseSessionCookies(lines);
-  if (parsed === null) storage.remove('session');
+  if (parsed === null) clearCookie();
   else if (parsed) storage.set('session', parsed);
+  // App 会自动保存响应 Cookie；业务会话已显式保存，清除原生副本，
+  // 避免媒体下载/预览或下一次切换账号绕过受控请求头。
+  if (parsed !== null) clearNativeCookies();
 }
 export function cookieHeader(): Record<string, string> {
   const cookie = storage.get<SessionCookie>('session');
-  if (!cookie) return {};
+  if (!cookie) return isNativeApp() ? { Cookie: '' } : {};
   if (cookie.expiresAt !== undefined && cookie.expiresAt <= Date.now()) {
     clearCookie();
-    return {};
+    return isNativeApp() ? { Cookie: '' } : {};
   }
   return { Cookie: `${cookieName}=${cookie.value}` };
 }
 export function clearCookie() {
   storage.remove('session');
+  clearNativeCookies();
 }

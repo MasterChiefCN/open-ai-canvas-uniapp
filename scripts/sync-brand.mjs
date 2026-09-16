@@ -16,7 +16,7 @@ export async function syncBrand(root = new URL('../', import.meta.url)) {
   const manifestText = await readFile(manifestUrl, 'utf8');
   const manifest = JSON.parse(manifestText);
   manifest.name = brandConfig.name;
-  manifest.description = `${brandConfig.name} 微信小程序`;
+  manifest.description = `${brandConfig.name} AI 创作客户端`;
 
   // 无变化时不写入，避免开发构建产生无意义的文件修改。
   if (JSON.stringify(JSON.parse(manifestText)) !== JSON.stringify(manifest)) {

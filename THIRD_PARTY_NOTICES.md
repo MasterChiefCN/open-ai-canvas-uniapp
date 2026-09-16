@@ -33,16 +33,17 @@ SOFTWARE.
 
 版本固定于 package.json 和 pnpm-lock.yaml，许可来自安装包 package.json。完整许可文本随原包保留，不由本项目 MIT 许可替代。
 
-| Packages                                                                                 | Source                                  | License    |
-| ---------------------------------------------------------------------------------------- | --------------------------------------- | ---------- |
-| @dcloudio/uni-app, uni-components, uni-mp-weixin, uni-cli-shared, vite-plugin-uni, types | https://github.com/dcloudio/uni-app     | Apache-2.0 |
-| Vue                                                                                      | https://github.com/vuejs/core           | MIT        |
-| Pinia                                                                                    | https://github.com/vuejs/pinia          | MIT        |
-| vue-i18n                                                                                 | https://github.com/intlify/vue-i18n     | MIT        |
-| TypeScript                                                                               | https://github.com/microsoft/TypeScript | Apache-2.0 |
-| Vite                                                                                     | https://github.com/vitejs/vite          | MIT        |
-| Vitest                                                                                   | https://github.com/vitest-dev/vitest    | MIT        |
-| vue-tsc                                                                                  | https://github.com/vuejs/language-tools | MIT        |
-| Prettier                                                                                 | https://github.com/prettier/prettier    | MIT        |
+| Packages                                                                                               | Source                                                                         | License    |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ---------- |
+| @dcloudio/uni-app, uni-app-plus, uni-components, uni-mp-weixin, uni-cli-shared, vite-plugin-uni, types | https://github.com/dcloudio/uni-app                                            | Apache-2.0 |
+| @types/html5plus                                                                                       | https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/html5plus | MIT        |
+| Vue                                                                                                    | https://github.com/vuejs/core                                                  | MIT        |
+| Pinia                                                                                                  | https://github.com/vuejs/pinia                                                 | MIT        |
+| vue-i18n                                                                                               | https://github.com/intlify/vue-i18n                                            | MIT        |
+| TypeScript                                                                                             | https://github.com/microsoft/TypeScript                                        | Apache-2.0 |
+| Vite                                                                                                   | https://github.com/vitejs/vite                                                 | MIT        |
+| Vitest                                                                                                 | https://github.com/vitest-dev/vitest                                           | MIT        |
+| vue-tsc                                                                                                | https://github.com/vuejs/language-tools                                        | MIT        |
+| Prettier                                                                                               | https://github.com/prettier/prettier                                           | MIT        |
 
 未引入第三方图片、字体或图标库。页面使用系统字体、CSS 和文字图形。分发包含依赖的产物时应保留相关包许可证和必要 NOTICE；锁文件记录全部间接依赖。

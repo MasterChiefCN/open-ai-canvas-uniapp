@@ -1,8 +1,8 @@
 # Open AI Canvas UniApp
 
-独立的 uni-app 微信小程序前端，复用 [Open AI Canvas](https://github.com/ddcat-ai/open-ai-canvas) 后端。使用 Vue 3、TypeScript、Pinia，不依赖 uniCloud，不嵌入 Web 页面。
+独立的 uni-app 客户端，支持微信小程序及 Android/iOS 原生 App 构建，复用 [Open AI Canvas](https://github.com/ddcat-ai/open-ai-canvas) 后端。使用 Vue 3、TypeScript、Pinia，不依赖 uniCloud，不嵌入远程 Web 页面。
 
-当前状态：已实现首版页面与接口适配，可编译为微信小程序；已通过离线测试和类型检查。尚未连接真实后端、微信开发者工具或 iOS/Android 微信真机验收，不代表生产环境已验证。
+当前状态：已实现页面、接口与 App 平台适配；已通过微信小程序和 App 资源构建、离线测试和类型检查。2026-09-16 已由部署者确认 Android 云打包成功。原生文件选择、权限、Cookie、媒体播放及保存仍需 Android/iOS 真机验收；iOS 签名打包尚未验证，不代表生产环境已验证。
 
 ## 快速开始
 
@@ -32,6 +32,16 @@ pnpm build:mp-weixin
 
 用微信开发者工具导入 `dist/dev/mp-weixin`（开发）或 `dist/build/mp-weixin`（构建）。AppID、微信合法域名和后端 SMTP/模型/积分设置是独立配置项，详见 [部署说明](docs/setup.md)。
 
+Android/iOS 使用同一套 App 构建资源：
+
+```sh
+pnpm dev:app
+# 发布资源构建
+pnpm build:app
+```
+
+分别输出到 `dist/dev/app` 和 `dist/build/app`。通过 HBuilderX 运行到 Android/iOS 基座，安装包还需配置包名、签名和证书。详见 [Android/iOS 运行与打包](docs/app.md)。
+
 ## 自定义品牌
 
 应用品牌只修改 `src/config/brand.ts`，支持中文、英文及混合名称：
@@ -45,7 +55,7 @@ export const brandConfig = Object.freeze({
 
 `name` 必须是非空字符串；`slogan` 可设为 `''`，隐藏页头标语。登录、注册、找回密码及共享页头使用同一品牌名。登录表单的英文名称以大写样式显示，中文保持原样；较长名称在页头省略、在认证页换行。
 
-修改后重新运行 `pnpm dev:mp-weixin` 或 `pnpm build:mp-weixin`。命令会先自动同步 `src/manifest.json` 的名称和描述，无需分别修改这些字段；AppID 等设置保留。同步后的 manifest 文件可随品牌修改一起提交。使用 Node.js 24；也可单独执行 `pnpm sync:brand`。直接运行 `uni` 或使用其他构建入口时，须先执行同步命令。
+修改后重新运行目标平台的开发或构建命令（`dev:mp-weixin` / `build:mp-weixin` / `dev:app` / `build:app`）。命令会先自动同步 `src/manifest.json` 的名称和描述，无需分别修改这些字段；AppID 等设置保留。同步后的 manifest 文件可随品牌修改一起提交。使用 Node.js 24；也可单独执行 `pnpm sync:brand`。直接运行 `uni` 或使用其他构建入口时，须先执行同步命令。
 
 此配置控制前端展示和本地构建元数据。微信公众平台中的小程序名称、头像等资料仍需在平台单独配置。上游来源说明、许可证、适配器路径和后端 Cookie 名不随品牌修改。
 
@@ -53,8 +63,10 @@ export const brandConfig = Object.freeze({
 
 ## 已实现
 
+- App：Android/iOS 资源构建、系统音频文件选择、相册与视频模块、权限用途说明和安全区配置；任务来源兼容 App 与既有微信任务，App 原生 Cookie 容器在启动、响应处理和退出时清理。
+
 - 账号：用户名或邮箱密码登录、完整注册、邮件验证码、密码找回、Cookie 会话恢复与退出；深色单列表单、密码显隐、时间戳验证码倒计时。
-- 创作：视频/图片/文本切换、逻辑模型与系统渠道目录、能力驱动参数底部面板、图片/视频/音频参考上传、三类后台任务提交；文本回复、复制和继续提问。参考素材入口按模型能力显示，音频从微信聊天文件选择，不包含音频生成。
+- 创作：视频/图片/文本切换、逻辑模型与系统渠道目录、能力驱动参数底部面板、图片/视频/音频参考上传、三类后台任务提交；文本回复、复制和继续提问。参考素材入口按模型能力显示，微信从聊天文件选择音频，App 从系统文件选择音频，不包含音频生成。
 - 任务：最近 100 条与活动任务合并、状态/类型/已加载内容搜索、任务详情、进度、图片缩略图、媒体预览/保存、安全日志摘要、取消与符合条件的重试。
 - 素材同步：小程序生成成功后自动将文本、图片和视频写入主项目个人 `/assets` 素材库；任务卡片/详情展示同步状态，失败可重试，重新进入页面时补同步已加载的历史任务。
 - 上传入库：图片、视频和音频参考素材上传后立即写入同账号个人素材库，不必提交生成。独立显示入库状态，失败可重试且不重复上传；待入库资源按账号暂存，返回创作页补同步。移除引用不删除素材；退出登录会清理该账号的本地待同步记录，请先完成入库。

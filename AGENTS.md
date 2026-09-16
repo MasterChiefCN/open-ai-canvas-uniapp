@@ -4,9 +4,9 @@
 
 ## 1. 项目定位和首版边界
 
-本项目是 [Open AI Canvas](https://github.com/ddcat-ai/open-ai-canvas) 的独立 uni-app 微信小程序前端，计划使用 Vue 3、TypeScript、Pinia，复用现有后端，不修改其业务接口。
+本项目是 [Open AI Canvas](https://github.com/ddcat-ai/open-ai-canvas) 的独立 uni-app 客户端，使用 Vue 3、TypeScript、Pinia，支持微信小程序和 Android/iOS App 资源构建，复用现有后端，不修改其业务接口。
 
-当前仓库处于文档初始化阶段。本文描述的是后续开发约定，不代表目录、组件或功能已经实现。首次搭建工程前先检查实际文件。
+当前已有页面、业务接口和平台适配实现。平台资源构建及离线测试通过不代表真机验收通过；修改前先检查实际代码。
 
 首版只包含：
 
@@ -123,6 +123,8 @@ export const backendConfig = Object.freeze({
 - 流水分类沿用 all、income、consume、refund；即使不提供支付或签到入口，也不能隐藏已经发生的相关流水。
 
 ## 9. 验证与交付
+
+App 平台差异集中于 `src/core/runtime.ts` 和原生适配模块。新增原生 API 调用须保留微信路径；Android/iOS 音频选择不能调用微信的 `chooseMessageFile`。App 任务使用 `uniapp-app` 来源，素材同步须兼容既有 `uniapp-wechat` 任务。运行步骤和真机验收见 `docs/app.md`。`pnpm build:app` 仅编译资源，不等于签名 APK/IPA 或上架。
 
 按变更风险选择最小充分验证。文档变更检查路径、链接、命令和前后表述；工程建立后再使用真实存在的 typecheck、构建和测试脚本，不报告未执行的命令通过。
 
