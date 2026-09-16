@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { brandConfig } from '../config/brand';
 import { uni } from '../core/platform';
 import { useAuth } from '../stores/auth';
 import { useWallet } from '../stores/wallet';
@@ -26,8 +27,8 @@ function accountMenu() {
   <view class="studio-header">
     <view class="brand-orb" />
     <view class="brand-copy grow">
-      <view class="brand-name">Open AI Canvas</view>
-      <view class="brand-caption">创意成真 · AI 让想象发生</view>
+      <view class="brand-name">{{ brandConfig.name }}</view>
+      <view v-if="brandConfig.slogan" class="brand-caption">{{ brandConfig.slogan }}</view>
     </view>
     <view
       v-if="auth.enabled('creditsEnabled')"
@@ -69,6 +70,14 @@ function accountMenu() {
     inset 2rpx 2rpx 8rpx #cfbdff,
     0 0 24rpx #5149ac70;
 }
+.brand-copy {
+  min-width: 0;
+}
+.brand-name,
+.brand-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .brand-name {
   font-size: 27rpx;
   font-weight: 650;
@@ -81,6 +90,7 @@ function accountMenu() {
   margin-top: 3rpx;
 }
 .balance-pill {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 5rpx;
@@ -92,6 +102,7 @@ function accountMenu() {
   white-space: nowrap;
 }
 .avatar {
+  flex-shrink: 0;
   width: 52rpx;
   height: 52rpx;
   min-width: 52rpx;

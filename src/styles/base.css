@@ -191,6 +191,8 @@ button[disabled] {
   padding-top: 9vh;
 }
 .auth-brand {
+  word-break: break-all;
+  text-transform: uppercase;
   margin-bottom: 48rpx;
   color: #b6c9e7;
   font-size: 24rpx;

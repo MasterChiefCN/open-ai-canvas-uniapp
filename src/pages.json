@@ -2,7 +2,9 @@
   "pages": [
     {
       "path": "pages/create/index",
-      "style": { "navigationBarTitleText": "Open AI Canvas" }
+      "style": {
+        "navigationBarTitleText": "创作"
+      }
     },
     {
       "path": "pages/tasks/index",
@@ -27,15 +29,21 @@
     },
     {
       "path": "pages/auth/login",
-      "style": { "navigationBarTitleText": "登录" }
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
     },
     {
       "path": "pages/auth/register",
-      "style": { "navigationBarTitleText": "注册" }
+      "style": {
+        "navigationBarTitleText": "注册"
+      }
     },
     {
       "path": "pages/auth/forgot-password",
-      "style": { "navigationBarTitleText": "找回密码" }
+      "style": {
+        "navigationBarTitleText": "找回密码"
+      }
     }
   ],
   "globalStyle": {

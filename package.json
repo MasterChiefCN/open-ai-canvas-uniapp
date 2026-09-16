@@ -4,8 +4,9 @@
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "scripts": {
-    "dev:mp-weixin": "uni -p mp-weixin",
-    "build:mp-weixin": "uni build -p mp-weixin",
+    "sync:brand": "node scripts/sync-brand.mjs",
+    "dev:mp-weixin": "pnpm sync:brand && uni -p mp-weixin",
+    "build:mp-weixin": "pnpm sync:brand && uni build -p mp-weixin",
     "typecheck": "vue-tsc --noEmit",
     "check:wxss": "node scripts/check-wxss.mjs",
     "test": "vitest run",

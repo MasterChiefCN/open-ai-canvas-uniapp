@@ -2,6 +2,7 @@
 import { computed, ref, getCurrentInstance, onMounted, onBeforeUnmount } from 'vue';
 import { onShow, onHide, onUnload } from '@dcloudio/uni-app';
 import { authApi } from '../api/auth';
+import { brandConfig } from '../config/brand';
 import { useAuth } from '../stores/auth';
 import { configurationError } from '../core/urls';
 import { ApiError } from '../core/http';
@@ -172,7 +173,7 @@ function go(page: string) {
 </script>
 <template>
   <view class="page auth">
-    <view class="auth-brand">◈ OPEN AI CANVAS</view>
+    <view class="auth-brand">◈ {{ brandConfig.name }}</view>
     <view class="eyebrow">{{ eyebrow }}</view>
     <view class="title">{{ title }}</view>
     <view class="subtitle">让灵感成为作品。文字、图像与视频，从这里开始。</view>
