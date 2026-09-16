@@ -6,13 +6,14 @@ import { useTasks } from '../stores/tasks';
 import { useAuth } from '../stores/auth';
 import { useWallet } from '../stores/wallet';
 import { assertEpoch, requestEpoch } from '../core/http';
-import type { Model, ImageReference, Task } from '../types/backend';
+import type { Model, ImageReference, Task, MediaReferences } from '../types/backend';
 export async function generate(
   model: Model,
   prompt: string,
   references: ImageReference[],
   options: Record<string, unknown>,
   history: HistoryMessage[],
+  media: MediaReferences = { videos: [], audios: [] },
 ) {
   const epoch = requestEpoch();
   const count = model.mode === 'image' ? Math.max(1, Math.min(15, Number(options.count) || 1)) : 1;
@@ -23,8 +24,18 @@ export async function generate(
   const available = normalizeCatalog(
     await modelApi.available({
       capability: model.mode,
-      operation: operationFor(model.mode, references.length),
-      inputs: { image: references.length, text: 0, video: 0, audio: 0 },
+      operation: operationFor(
+        model.mode,
+        references.length,
+        media.videos.length,
+        media.audios.length,
+      ),
+      inputs: {
+        image: references.length,
+        text: 0,
+        video: media.videos.length,
+        audio: media.audios.length,
+      },
       options,
     }),
   );
@@ -40,10 +51,18 @@ export async function generate(
         ...(model.mode === 'image' && 'count' in options ? { count: 1 } : {}),
       };
       const task = await taskApi.create(
-        generationPayload(model, prompt, references, singleOptions, history, {
-          batchIndex,
-          batchCount: count,
-        }),
+        generationPayload(
+          model,
+          prompt,
+          references,
+          singleOptions,
+          history,
+          {
+            batchIndex,
+            batchCount: count,
+          },
+          media,
+        ),
       );
       useTasks().remember(task);
       completed.push(task);

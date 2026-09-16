@@ -216,7 +216,19 @@ describe('response handling', () => {
         name: 'file',
         header: { Cookie: 'open_ai_canvas_session=test' },
         url: 'https://tenant.test/api/resources',
+        formData: { kind: 'image' },
       }),
+    );
+    await upload('/tmp/video', 'video', { width: 1920, height: 1080, durationMs: 3000 });
+    expect(uni.uploadFile).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        formData: { kind: 'video', width: 1920, height: 1080, durationMs: 3000 },
+        header: { Cookie: 'open_ai_canvas_session=test' },
+      }),
+    );
+    await upload('/tmp/audio', 'audio');
+    expect(uni.uploadFile).toHaveBeenLastCalledWith(
+      expect.objectContaining({ formData: { kind: 'audio' } }),
     );
   });
   it('notifies authentication failure without retrying the request', async () => {

@@ -3,6 +3,7 @@ import {
   normalizeCatalog,
   validateModel,
   defaultParameters,
+  operationFor,
 } from '../src/adapters/open-ai-canvas/model-capabilities';
 import { generationPayload } from '../src/adapters/open-ai-canvas/generation';
 import { parseResult, mergeText, canRetry } from '../src/adapters/open-ai-canvas/task-result';
@@ -34,6 +35,50 @@ const task = (extra: Partial<Task> = {}): Task => ({
   ...extra,
 });
 describe('capabilities and generation contracts', () => {
+  it('matches upstream multimodal video operation precedence', () => {
+    expect(operationFor('video', 0, 0, 1)).toBe('audio_to_video');
+    expect(operationFor('video', 1, 0, 1)).toBe('image_to_video');
+    expect(operationFor('video', 3)).toBe('reference_to_video');
+    expect(operationFor('video', 0, 1, 1)).toBe('reference_to_video');
+    expect(operationFor('text', 0, 1)).toBe('text');
+  });
+  it('passes durable video/audio references and rejects unsupported combinations', () => {
+    const multimodal: Model = {
+      ...model,
+      spec: {
+        operations: ['reference_to_video'],
+        inputs: { video: { min: 1, max: 1 }, audio: { min: 0, max: 1 } },
+      },
+    };
+    const reference = {
+      id: 'r',
+      name: 'clip',
+      type: 'video/mp4',
+      url: '' as const,
+      storageKey: 'resource:r',
+      durationMs: 3000,
+    };
+    const media = {
+      videos: [reference],
+      audios: [{ ...reference, type: 'audio/mpeg', storageKey: 'resource:a' }],
+    };
+    const payload = generationPayload(multimodal, 'prompt', [], {}, [], {}, media);
+    expect(payload.operation).toBe('reference_to_video');
+    expect(payload.input.referenceVideos).toEqual(media.videos);
+    expect(payload.input.referenceAudios).toEqual(media.audios);
+    expect(() => generationPayload(model, 'prompt', [], {}, [], {}, media)).toThrow();
+    expect(() =>
+      generationPayload(
+        multimodal,
+        'prompt',
+        [],
+        {},
+        [],
+        {},
+        { ...media, videos: [reference, reference] },
+      ),
+    ).toThrow();
+  });
   it('maps logical references and operation without provider secrets', () => {
     const payload = generationPayload(
       model,

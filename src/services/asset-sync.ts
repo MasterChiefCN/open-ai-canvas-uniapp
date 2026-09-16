@@ -37,7 +37,7 @@ function positive(value: unknown): value is number {
 function nonNegative(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
-async function mediaDimensions(kind: 'image' | 'video', url: string) {
+export async function mediaDimensions(kind: 'image' | 'video', url: string) {
   return new Promise<{ width: number; height: number }>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('读取媒体尺寸超时，请稍后重试同步')), 30000);
     const success = (info: { width: number; height: number }) => {

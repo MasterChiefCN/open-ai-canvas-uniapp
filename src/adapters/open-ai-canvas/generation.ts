@@ -1,4 +1,4 @@
-import type { Model, ImageReference } from '../../types/backend';
+import type { Model, ImageReference, MediaReferences } from '../../types/backend';
 import { validateModel, operationFor } from './model-capabilities';
 export type HistoryMessage = { role: 'user' | 'assistant'; content: string };
 export function generationPayload(
@@ -8,8 +8,12 @@ export function generationPayload(
   options: Record<string, unknown>,
   history: HistoryMessage[] = [],
   metadata: Record<string, unknown> = {},
+  media: MediaReferences = { videos: [], audios: [] },
 ) {
-  validateModel(model, prompt, references.length, options);
+  validateModel(model, prompt, references.length, options, {
+    videos: media.videos.length,
+    audios: media.audios.length,
+  });
   const config = model.logicalModelId
     ? { ...options }
     : {
@@ -21,7 +25,12 @@ export function generationPayload(
       };
   return {
     type: `canvas_${model.mode}`,
-    operation: operationFor(model.mode, references.length),
+    operation: operationFor(
+      model.mode,
+      references.length,
+      media.videos.length,
+      media.audios.length,
+    ),
     prompt: prompt.trim(),
     model: model.modelKey,
     ...(model.logicalModelId ? { logicalModelId: model.logicalModelId } : {}),
@@ -31,8 +40,8 @@ export function generationPayload(
       config,
       ...(model.logicalModelId ? { capabilityOptions: options } : {}),
       referenceImages: references,
-      referenceVideos: [],
-      referenceAudios: [],
+      referenceVideos: media.videos,
+      referenceAudios: media.audios,
       textHistory: history,
       ...(model.mode === 'text' ? { textOptions: { stream: true, thinking: false } } : {}),
       metadata: { source: 'uniapp-wechat', ...metadata },

@@ -52,6 +52,41 @@ beforeEach(() => {
   });
 });
 describe('batch submission', () => {
+  it('checks media counts with the same operation used to create the task', async () => {
+    const video: Model = {
+      ...model,
+      mode: 'video',
+      spec: {
+        operations: ['reference_to_video'],
+        inputs: { video: { min: 0, max: 1 }, audio: { min: 0, max: 1 } },
+      },
+    };
+    const reference = {
+      id: 'r',
+      name: 'clip',
+      type: 'video/mp4',
+      url: '' as const,
+      storageKey: 'resource:r',
+    };
+    const media = { videos: [reference], audios: [{ ...reference, type: 'audio/mpeg' }] };
+    mocks.create.mockResolvedValue({ id: 'accepted' });
+    await generate(video, 'prompt', [], {}, [], media);
+    expect(mocks.available).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operation: 'reference_to_video',
+        inputs: { image: 0, text: 0, video: 1, audio: 1 },
+      }),
+    );
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operation: 'reference_to_video',
+        input: expect.objectContaining({
+          referenceVideos: media.videos,
+          referenceAudios: media.audios,
+        }),
+      }),
+    );
+  });
   it('records accepted tasks immediately and stops after an ambiguous failure', async () => {
     mocks.create
       .mockResolvedValueOnce({ id: 'accepted' })

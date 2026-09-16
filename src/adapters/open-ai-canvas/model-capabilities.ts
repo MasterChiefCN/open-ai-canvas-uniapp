@@ -25,6 +25,8 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
         if (!capability || !m.protocol) return [];
         const spec: CapabilitySpec = {
           inputs: {
+            video: { min: 0, max: capability.references.maxVideos || 0 },
+            audio: { min: 0, max: capability.references.maxAudios || 0 },
             image: {
               min: capability.references.minImages || 0,
               max: capability.references.maxImages,
@@ -80,6 +82,8 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
             rawCapabilities: raw,
             promptMaxChars: capability.references.promptMaxChars,
             maxImageBytes: capability.references.maxImageBytes,
+            maxVideoBytes: capability.references.maxVideoBytes,
+            maxAudioBytes: capability.references.maxAudioBytes,
           },
         ];
       }),
@@ -125,23 +129,41 @@ export function defaultParameters(model?: Model): Record<string, unknown> {
     ]),
   );
 }
-export const operationFor = (mode: Mode, images: number) =>
-  mode === 'video' ? (images ? 'image_to_video' : 'text_to_video') : mode;
+export const operationFor = (mode: Mode, images: number, videos = 0, audios = 0) =>
+  mode !== 'video'
+    ? mode
+    : videos || images > 2
+      ? 'reference_to_video'
+      : images
+        ? 'image_to_video'
+        : audios
+          ? 'audio_to_video'
+          : 'text_to_video';
 export function validateModel(
   model: Model,
   prompt: string,
   images: number,
   options: Record<string, unknown>,
+  media: { videos: number; audios: number } = { videos: 0, audios: 0 },
 ) {
   if (!prompt.trim()) throw new Error('请填写创作描述');
   if (model.promptMaxChars && prompt.length > model.promptMaxChars)
     throw new Error(`描述最多 ${model.promptMaxChars} 字`);
   const specs = model.profiles?.length ? model.profiles : [model.spec];
   const matches = (spec: CapabilitySpec) => {
-    if (spec.operations?.length && !spec.operations.includes(operationFor(model.mode, images)))
+    if (
+      spec.operations?.length &&
+      !spec.operations.includes(operationFor(model.mode, images, media.videos, media.audios))
+    )
       return false;
-    if (images < (spec.inputs?.image?.min || 0) || images > (spec.inputs?.image?.max || 0))
-      return false;
+    for (const [kind, count] of Object.entries({
+      image: images,
+      video: media.videos,
+      audio: media.audios,
+    })) {
+      if (count < (spec.inputs?.[kind]?.min || 0) || count > (spec.inputs?.[kind]?.max || 0))
+        return false;
+    }
     return Object.entries(options).every(([key, value]) => {
       const limit = spec.options?.[key];
       if (!limit) return false;
@@ -158,5 +180,5 @@ export function validateModel(
       );
     });
   };
-  if (!specs.some(matches)) throw new Error('当前模型不支持这一组参数或参考图数量，请调整后重试');
+  if (!specs.some(matches)) throw new Error('当前模型不支持这一组参数或参考素材组合，请调整后重试');
 }

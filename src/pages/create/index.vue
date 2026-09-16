@@ -2,7 +2,14 @@
 import { computed, ref, watch } from 'vue';
 import { uni } from '../../core/platform';
 import { modelApi } from '../../api/models';
-import { resourceApi } from '../../api/resources';
+import {
+  chooseReferences,
+  uploadReference,
+  referenceUploadStates,
+  syncReferenceAsset,
+  resumeReferenceAssets,
+} from '../../services/reference-upload';
+import { mediaDimensions } from '../../services/asset-sync';
 import { useAuth, onSessionReset } from '../../stores/auth';
 import { useTasks } from '../../stores/tasks';
 import { useWallet } from '../../stores/wallet';
@@ -19,7 +26,7 @@ import { generate } from '../../services/generation';
 import { watchTasks, unwatchTasks } from '../../services/task-polling';
 import { storage } from '../../core/storage';
 import { assertEpoch, requestEpoch } from '../../core/http';
-import type { Mode, Model, ImageReference } from '../../types/backend';
+import type { Mode, Model, ImageReference, MediaReferences, MediaKind } from '../../types/backend';
 import TaskCard from '../../components/TaskCard.vue';
 import StudioHeader from '../../components/StudioHeader.vue';
 import StudioHero from '../../components/StudioHero.vue';
@@ -33,6 +40,18 @@ const models = ref<Model[]>([]);
 const selectedId = ref('');
 const options = ref<Record<string, unknown>>({});
 const references = ref<Array<ImageReference & { preview: string }>>([]);
+const media = ref<MediaReferences>({ videos: [], audios: [] });
+const uploadStates = computed(() => Object.values(referenceUploadStates));
+const mediaGroups = computed(() =>
+  (['video', 'audio'] as const)
+    .map((kind) => ({
+      kind,
+      label: kind === 'video' ? '视频' : '音频',
+      max: selected.value?.spec.inputs?.[kind]?.max || 0,
+      items: kind === 'video' ? media.value.videos : media.value.audios,
+    }))
+    .filter((group) => group.max > 0),
+);
 const submitting = ref(false);
 const uploading = ref(false);
 const notice = ref('');
@@ -85,10 +104,12 @@ watch([prompt, mode, history, lastTextTask], persistDraft, { deep: true });
 watch(mode, () => {
   selectedId.value = available.value[0]?.id || '';
   references.value = [];
+  media.value = { videos: [], audios: [] };
 });
 watch(selectedId, () => {
   options.value = defaultParameters(selected.value);
   references.value = [];
+  media.value = { videos: [], audios: [] };
 });
 watch(
   () => tasks.createdIds.join(','),
@@ -100,6 +121,7 @@ onSessionReset(() => {
   prompt.value = '';
   models.value = [];
   references.value = [];
+  media.value = { videos: [], audios: [] };
   history.value = [];
   lastTextTask.value = '';
   notice.value = '';
@@ -121,6 +143,7 @@ const { error, loading, refresh } = usePage(
       lastTextTask.value = draft.lastTextTask || '';
     }
     tasks.restore();
+    void resumeReferenceAssets().catch(() => {});
     const catalog = await modelApi.catalog();
     models.value = normalizeCatalog(catalog);
     if (!available.value.some((model) => model.id === selectedId.value))
@@ -146,40 +169,67 @@ function selectOption(
 ) {
   options.value[key] = values[Number(event.detail.value)];
 }
-async function addImage() {
-  if (uploading.value || !selected.value) return;
+async function addReference(kind: MediaKind) {
+  if (uploading.value || submitting.value || !selected.value) return;
   const model = selected.value;
   const epoch = requestEpoch();
+  const items = kind === 'video' ? media.value.videos : media.value.audios;
+  const remaining =
+    (model.spec.inputs?.[kind]?.max || 0) -
+    (kind === 'image' ? references.value.length : items.length);
+  if (remaining <= 0) return;
   uploading.value = true;
   try {
-    const selection = await new Promise<UniApp.ChooseImageSuccessCallbackResult>(
-      (resolve, reject) =>
-        uni.chooseImage({
-          count: Math.min(9, maxImages.value - references.value.length),
-          sizeType: ['compressed'],
-          success: resolve,
-          fail: reject,
-        }),
-    );
-    const paths = selection.tempFilePaths;
-    const files = Array.isArray(selection.tempFiles) ? selection.tempFiles : [];
-    for (let index = 0; index < paths.length; index++) {
+    const files = await chooseReferences(kind, remaining);
+    for (const file of files.slice(0, remaining)) {
       assertEpoch(epoch);
       const runtimeMax = (auth.session.runtimeLimits?.resourceUploadMB || 50) * 1024 * 1024;
-      const limit = model.maxImageBytes ? Math.min(runtimeMax, model.maxImageBytes) : runtimeMax;
-      if (files[index]?.size > limit)
-        throw new Error(`参考图超出上传限制（${Math.floor(limit / 1024 / 1024)} MB）`);
-      const { resource } = await resourceApi.upload(paths[index]);
-      if (selectedId.value !== model.id) throw new Error('模型已切换，请重新选择参考图');
-      references.value.push({
+      const modelMax =
+        kind === 'image'
+          ? model.maxImageBytes
+          : kind === 'video'
+            ? model.maxVideoBytes
+            : model.maxAudioBytes;
+      const limit = modelMax ? Math.min(runtimeMax, modelMax) : runtimeMax;
+      if (file.size > limit)
+        throw new Error(`参考素材超出上传限制（${Math.floor(limit / 1024 / 1024)} MB）`);
+      const durationMax = model.rawCapabilities?.[model.mode]?.references;
+      const seconds =
+        kind === 'video'
+          ? durationMax?.maxVideoDurationSeconds
+          : kind === 'audio'
+            ? durationMax?.maxAudioDurationSeconds
+            : 0;
+      if (seconds && file.durationMs && file.durationMs > seconds * 1000)
+        throw new Error(`参考素材时长不能超过 ${seconds} 秒`);
+      const dimensions = kind === 'image' ? await mediaDimensions('image', file.path) : {};
+      assertEpoch(epoch);
+      const resource = await uploadReference(file.path, kind, file.name, {
+        ...dimensions,
+        ...(kind === 'video'
+          ? { width: file.width, height: file.height, durationMs: file.durationMs }
+          : {}),
+      });
+      assertEpoch(epoch);
+      if (selectedId.value !== model.id)
+        throw new Error('模型已切换，素材已上传，请重新选择参考素材');
+      const reference = {
         id: resource.id,
-        name: `参考图 ${references.value.length + 1}`,
+        name: file.name,
         type: resource.mimeType,
-        dataUrl: '',
         storageKey: `resource:${resource.id}`,
         bytes: resource.size,
-        preview: paths[index],
-      });
+      };
+      if (kind === 'image')
+        references.value.push({ ...reference, dataUrl: '', preview: file.path });
+      else
+        items.push({
+          ...reference,
+          url: '',
+          width: resource.width,
+          height: resource.height,
+          durationMs: resource.durationMs,
+        });
     }
   } catch (failure) {
     if (
@@ -201,7 +251,10 @@ async function submit() {
   notice.value = '';
   error.value = '';
   try {
-    validateModel(selected.value, prompt.value, references.value.length, options.value);
+    validateModel(selected.value, prompt.value, references.value.length, options.value, {
+      videos: media.value.videos.length,
+      audios: media.value.audios.length,
+    });
     let context = [...history.value];
     if (mode.value === 'text' && textTask.value) {
       if (tasks.activeTask(textTask.value)) throw new Error('请等待当前文本生成完成后继续提问');
@@ -219,6 +272,7 @@ async function submit() {
       refs,
       options.value,
       mode.value === 'text' ? context : [],
+      media.value,
     );
     if (result.tasks.length) {
       if (mode.value === 'text') {
@@ -336,7 +390,7 @@ function newConversation() {
             v-if="references.length < maxImages"
             class="upload-button"
             :disabled="uploading || submitting"
-            @tap="addImage"
+            @tap="addReference('image')"
           >
             <view class="upload-plus">＋</view>
             <text>{{ uploading ? '上传中…' : '上传图片' }}</text>
@@ -352,6 +406,57 @@ function newConversation() {
               移除 {{ index + 1 }}
             </text>
           </view>
+        </view>
+      </view>
+      <view v-for="group in mediaGroups" :key="group.kind" class="config-card reference-card">
+        <view class="config-row">
+          <view class="grow">
+            <view>
+              参考{{ group.label }}
+              <text class="muted small">{{ group.items.length }}/{{ group.max }}</text>
+            </view>
+            <view class="muted small">
+              {{ group.kind === 'audio' ? '从微信聊天文件选择音频' : '从相册选择视频' }}
+            </view>
+          </view>
+          <button
+            v-if="group.items.length < group.max"
+            class="upload-button"
+            :disabled="uploading || submitting"
+            @tap="addReference(group.kind)"
+          >
+            <view class="upload-plus">＋</view>
+            <text>上传{{ group.label }}</text>
+          </button>
+        </view>
+        <view v-for="(item, index) in group.items" :key="item.id" class="config-row small">
+          <text class="grow">{{ item.name }}</text>
+          <text class="link" @tap="!submitting && !uploading && group.items.splice(index, 1)">
+            移除
+          </text>
+        </view>
+      </view>
+      <view v-if="uploadStates.length" class="config-card reference-card">
+        <view class="config-row small">
+          参考素材上传后自动加入主项目素材库；移除引用不会删除素材。
+        </view>
+        <view v-for="item in uploadStates" :key="item.resource.id" class="config-row small">
+          <view class="grow">
+            <view>
+              {{ item.name }} ·
+              {{
+                item.status === 'synced'
+                  ? '已入库'
+                  : item.status === 'syncing'
+                    ? '正在入库…'
+                    : '已上传，入库失败'
+              }}
+            </view>
+            <view v-if="item.message" class="muted">{{ item.message }}</view>
+          </view>
+          <text v-if="item.status === 'error'" class="link" @tap="syncReferenceAsset(item)">
+            重试入库
+          </text>
         </view>
       </view>
       <view v-if="fields.length" class="config-card config-row" @tap="showParameters = true">

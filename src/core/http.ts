@@ -113,7 +113,11 @@ export function request<T>(
     pending.add(task);
   });
 }
-export function upload<T>(filePath: string): Promise<T> {
+export function upload<T>(
+  filePath: string,
+  kind: 'image' | 'video' | 'audio' = 'image',
+  meta: { width?: number; height?: number; durationMs?: number } = {},
+): Promise<T> {
   const problem = configurationError();
   if (problem) return Promise.reject(new Error(problem));
   const captured = epoch;
@@ -122,7 +126,7 @@ export function upload<T>(filePath: string): Promise<T> {
       url: apiUrl('/resources'),
       filePath,
       name: 'file',
-      formData: { kind: 'image' },
+      formData: { ...meta, kind },
       header: cookieHeader(),
       timeout: 60000,
       success(response) {

@@ -1,7 +1,7 @@
 import { ApiError, request } from '../core/http';
 export type LibraryAsset = {
   id: string;
-  kind: 'text' | 'image' | 'video';
+  kind: 'text' | 'image' | 'video' | 'audio';
   title: string;
   coverUrl: string;
   tags: string[];
@@ -9,7 +9,7 @@ export type LibraryAsset = {
   source: string;
   createdAt: string;
   updatedAt: string;
-  metadata: { generationEffectKey: string; taskId: string; outputIndex: number; source: string };
+  metadata: { source: string; [key: string]: string | number };
   data: Record<string, string | number>;
 };
 export const assetApi = {

@@ -61,6 +61,12 @@ export type ChannelCapability = {
   };
 };
 type References = {
+  maxVideos?: number;
+  maxVideoBytes?: number;
+  maxVideoDurationSeconds?: number;
+  maxAudios?: number;
+  maxAudioBytes?: number;
+  maxAudioDurationSeconds?: number;
   minImages?: number;
   maxImages: number;
   maxImageBytes: number;
@@ -97,6 +103,8 @@ export type Model = {
   rawCapabilities?: ChannelCapability;
   promptMaxChars?: number;
   maxImageBytes?: number;
+  maxVideoBytes?: number;
+  maxAudioBytes?: number;
 };
 export type Task = {
   id: string;
@@ -132,6 +140,7 @@ export type TextReplay = {
   complete: boolean;
 };
 export type Resource = {
+  kind?: string;
   id: string;
   mimeType: string;
   size: number;
@@ -148,6 +157,14 @@ export type ImageReference = {
   storageKey: string;
   bytes?: number;
 };
+export type MediaKind = 'image' | 'video' | 'audio';
+export type MediaReference = Omit<ImageReference, 'dataUrl'> & {
+  url: '';
+  width?: number;
+  height?: number;
+  durationMs?: number;
+};
+export type MediaReferences = { videos: MediaReference[]; audios: MediaReference[] };
 export type Account = {
   availableMicrocredits: number;
   reservedMicrocredits: number;
