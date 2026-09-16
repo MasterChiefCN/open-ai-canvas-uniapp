@@ -1,5 +1,5 @@
 page {
-  background: #101217;
+  background: #080f19;
   color: #f1f3f7;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 28rpx;
@@ -39,7 +39,7 @@ button[disabled] {
 }
 .subtitle,
 .muted {
-  color: #949cab;
+  color: #91a3bd;
   font-size: 25rpx;
 }
 .section-title {
@@ -47,8 +47,8 @@ button[disabled] {
   font-weight: 600;
 }
 .card {
-  background: #1a1d25;
-  border: 1rpx solid #2b303b;
+  background: linear-gradient(125deg, #1d2a39, #141e2b 55%, #171f2c);
+  border: 1rpx solid #344356;
   border-radius: 24rpx;
   padding: 28rpx;
   margin: 24rpx 0;
@@ -78,8 +78,8 @@ button[disabled] {
 .textarea,
 .select {
   width: 100%;
-  background: #242832;
-  border: 1rpx solid #343a46;
+  background: #111c2b;
+  border: 1rpx solid #41516a;
   border-radius: 14rpx;
   color: #f6f7fa;
   padding: 20rpx 22rpx;
@@ -92,9 +92,13 @@ button[disabled] {
   height: 230rpx;
 }
 .primary {
-  background: #f3f5f8;
-  color: #141820;
-  border-radius: 14rpx;
+  background: linear-gradient(110deg, #42c8fa, #3974ff 38%, #7450ff 72%, #bb76f9);
+  color: #ffffff;
+  border: 1rpx solid #b4c2ff;
+  box-shadow:
+    inset 0 0 18rpx #dbe7ff65,
+    0 8rpx 32rpx #5545da30;
+  border-radius: 24rpx;
   min-height: 88rpx;
   line-height: 88rpx;
   font-weight: 600;
@@ -111,7 +115,7 @@ button[disabled] {
 }
 .link {
   color: #b4cbef;
-  text-decoration: underline;
+  text-decoration: none;
   font-size: 26rpx;
 }
 .small {
@@ -146,13 +150,18 @@ button[disabled] {
 .chip {
   padding: 12rpx 24rpx;
   border-radius: 40rpx;
-  background: #222731;
-  color: #9ea9bb;
+  background: linear-gradient(150deg, #1c2939, #111a27);
+  border: 1rpx solid #344258;
+  color: #aebed5;
   font-size: 25rpx;
 }
 .chip.active {
-  background: #dce8ff;
-  color: #1b2942;
+  background: linear-gradient(120deg, #6550d6, #244c9d 60%, #6433bd);
+  border-color: #948bff;
+  box-shadow:
+    inset 0 0 12rpx #a18bff88,
+    0 0 18rpx #5a45cb30;
+  color: #ffffff;
 }
 .separator {
   height: 1rpx;
@@ -173,10 +182,10 @@ button[disabled] {
   letter-spacing: -2rpx;
 }
 .positive {
-  color: #8cdbc0;
+  color: #4fe0c5;
 }
 .negative {
-  color: #e4b4b1;
+  color: #e6edfc;
 }
 .auth {
   padding-top: 9vh;
@@ -218,4 +227,65 @@ button[disabled] {
   color: #78859a;
   font-size: 22rpx;
   text-align: center;
+}
+.studio-page {
+  background: radial-gradient(ellipse at 90% 0%, #19326533, #080f1900 44%);
+  padding-top: 14rpx;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 32rpx 0 20rpx;
+  gap: 16rpx;
+}
+.segment-control {
+  display: flex;
+  gap: 10rpx;
+  padding: 10rpx;
+  margin: 4rpx 0 20rpx;
+  border: 1rpx solid #3b495e;
+  border-radius: 26rpx;
+  background: linear-gradient(130deg, #1d2939, #111923);
+}
+.segment-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12rpx;
+  min-height: 72rpx;
+  border: 1rpx solid transparent;
+  border-radius: 19rpx;
+  color: #9db0ce;
+}
+.segment-item.active {
+  color: #fff;
+  background: linear-gradient(130deg, #7349de, #2b4e9a 55%, #5536a9);
+  border-color: #9c91ff;
+  box-shadow:
+    inset 0 0 16rpx #a88cff99,
+    0 0 16rpx #5958de40;
+}
+.filter-chips {
+  flex-wrap: nowrap;
+  gap: 10rpx;
+}
+.filter-chips .chip {
+  flex: 1;
+  text-align: center;
+  padding: 13rpx 6rpx;
+  font-size: 23rpx;
+  white-space: nowrap;
+}
+.empty {
+  border: 1rpx dashed #34465d;
+  border-radius: 24rpx;
+  background: #111c2b70;
+  margin: 22rpx 0;
+}
+.empty-title {
+  color: #d3def1;
+  font-size: 28rpx;
+  margin: 12rpx 0 6rpx;
 }

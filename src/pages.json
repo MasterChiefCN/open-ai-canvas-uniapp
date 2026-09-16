@@ -40,19 +40,34 @@
   ],
   "globalStyle": {
     "navigationBarTextStyle": "white",
-    "navigationBarBackgroundColor": "#101217",
-    "backgroundColor": "#101217",
+    "navigationBarBackgroundColor": "#080f19",
+    "backgroundColor": "#080f19",
     "backgroundTextStyle": "light"
   },
   "tabBar": {
-    "color": "#8d99ae",
-    "selectedColor": "#dce8ff",
-    "backgroundColor": "#171b24",
+    "color": "#93a7c5",
+    "selectedColor": "#b6b2ff",
+    "backgroundColor": "#0e1825",
     "borderStyle": "black",
     "list": [
-      { "pagePath": "pages/create/index", "text": "创作" },
-      { "pagePath": "pages/tasks/index", "text": "任务" },
-      { "pagePath": "pages/wallet/index", "text": "积分" }
+      {
+        "pagePath": "pages/create/index",
+        "text": "创作",
+        "iconPath": "static/icons/create-tab.png",
+        "selectedIconPath": "static/icons/create-active.png"
+      },
+      {
+        "pagePath": "pages/tasks/index",
+        "text": "任务",
+        "iconPath": "static/icons/tasks-tab.png",
+        "selectedIconPath": "static/icons/tasks-active.png"
+      },
+      {
+        "pagePath": "pages/wallet/index",
+        "text": "积分",
+        "iconPath": "static/icons/wallet-tab.png",
+        "selectedIconPath": "static/icons/wallet-active.png"
+      }
     ]
   }
 }
