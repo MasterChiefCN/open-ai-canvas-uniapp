@@ -13,6 +13,7 @@ import { storage } from '../../core/storage';
 import type { TaskLog, Mode } from '../../types/backend';
 import MediaPreview from '../../components/MediaPreview.vue';
 import TaskParameters from '../../components/TaskParameters.vue';
+import AssetSyncStatus from '../../components/AssetSyncStatus.vue';
 const id = ref('');
 const logs = ref<TaskLog[]>([]);
 const busy = ref(false);
@@ -29,7 +30,7 @@ const { error, loading, refresh } = usePage(
     visible = true;
     if (!id.value) throw new Error('缺少任务 ID');
     const value = await taskApi.get(id.value);
-    tasks.put(value);
+    tasks.put(value, true);
     if (visible) watchTasks('detail', [id.value]);
     logs.value = await taskApi.logs(id.value);
   },
@@ -82,6 +83,7 @@ function reuse() {
       <view class="eyebrow">TASK DETAILS</view>
       <view class="title">{{ statusLabel[task.status] }}</view>
       <view class="muted">{{ task.model || task.type }}</view>
+      <AssetSyncStatus :task="task" detail />
       <view class="card">
         <view class="label">完整描述</view>
         <view class="pre">{{ task.prompt }}</view>

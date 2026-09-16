@@ -17,6 +17,7 @@ import {
 } from '../src/core/http';
 import { storage } from '../src/core/storage';
 import { formatCredits } from '../src/core/credits';
+import { assetApi } from '../src/api/assets';
 vi.mock('../src/config/backend', () => ({
   backendConfig: { apiBaseUrl: 'https://tenant.test/api' },
 }));
@@ -108,6 +109,24 @@ describe('session cookie and storage', () => {
   });
 });
 describe('response handling', () => {
+  it('only treats HTTP 404 as a missing library asset', async () => {
+    let status = 404;
+    uni.request = vi.fn((options) => {
+      queueMicrotask(() =>
+        options?.success?.({
+          statusCode: status,
+          data: { code: status, msg: 'error' },
+          header: {},
+          cookies: [],
+          errMsg: '',
+        }),
+      );
+      return { abort() {} };
+    }) as any;
+    await expect(assetApi.get('missing')).resolves.toBeUndefined();
+    status = 500;
+    await expect(assetApi.get('failed')).rejects.toBeInstanceOf(ApiError);
+  });
   it('only resolves code zero envelopes', () => {
     expect(unwrap({ code: 0, data: { id: 'task' } }, 200)).toEqual({
       id: 'task',
@@ -159,6 +178,23 @@ describe('response handling', () => {
       '提交结果未知',
     );
     expect(uni.request).toHaveBeenCalledOnce();
+  });
+  it('authenticates asset PUTs and reports ambiguous writes without retrying', async () => {
+    receiveCookies(['open_ai_canvas_session=test']);
+    uni.request = vi.fn((options) => {
+      queueMicrotask(() => options?.fail?.({ errMsg: 'timeout' }));
+      return { abort() {} };
+    }) as any;
+    await expect(
+      request('/assets/generated', 'PUT', { asset: { id: 'generated' } }),
+    ).rejects.toThrow('提交结果未知');
+    expect(uni.request).toHaveBeenCalledOnce();
+    expect(uni.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'PUT',
+        header: expect.objectContaining({ Cookie: 'open_ai_canvas_session=test' }),
+      }),
+    );
   });
   it('uses the same session and envelope parser for uploads', async () => {
     receiveCookies(['open_ai_canvas_session=test']);

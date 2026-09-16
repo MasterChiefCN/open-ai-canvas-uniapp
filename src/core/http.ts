@@ -71,9 +71,10 @@ function handleError(error: unknown, guest: boolean) {
 }
 export function request<T>(
   path: string,
-  method: 'GET' | 'POST' = 'GET',
+  method: 'GET' | 'POST' | 'PUT' = 'GET',
   data?: object,
   guest = false,
+  headers: Record<string, string> = {},
 ): Promise<T> {
   const problem = configurationError();
   if (problem) return Promise.reject(new Error(problem));
@@ -84,7 +85,7 @@ export function request<T>(
       method,
       data,
       timeout: 30000,
-      header: { ...cookieHeader(), 'Content-Type': 'application/json' },
+      header: { ...headers, ...cookieHeader(), 'Content-Type': 'application/json' },
       success(response) {
         try {
           assertEpoch(captured);
@@ -99,7 +100,7 @@ export function request<T>(
           captured !== epoch
             ? new StaleRequestError()
             : new ApiError(
-                method === 'POST'
+                method !== 'GET'
                   ? '网络异常，提交结果未知，请先刷新核对，勿重复提交'
                   : '网络异常，请重试',
               ),

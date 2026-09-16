@@ -52,21 +52,21 @@ export const backendConfig = Object.freeze({
 
 推荐结构如下，按实际功能逐步创建，禁止为了目录齐全而添加空壳封装。
 
-| 目录 | 职责 |
-| --- | --- |
-| `src/config/` | 唯一后端地址配置及明确的应用配置 |
-| `src/core/http.ts` | 请求、统一业务信封、错误与取消语义 |
-| `src/core/session.ts` | Cookie 解析、携带、失效与清理 |
-| `src/core/storage.ts` | 后端实例与账号隔离的存储 |
-| `src/core/urls.ts` | API 和资源地址解析 |
-| `src/api/` | auth、models、tasks、resources、wallet 的接口和 DTO |
-| `src/adapters/open-ai-canvas/` | 生成入参、结果和模型能力的后端特有映射 |
-| `src/services/` | 上传、生成编排、共享任务轮询、媒体保存 |
-| `src/stores/` | 跨页面状态和缓存失效 |
-| `src/components/` | 真实复用的表单、任务卡片、模型参数与媒体组件 |
-| `src/pages/` | 页面布局、交互、状态展示 |
-| `src/styles/` | 集中设计变量与基础样式 |
-| `docs/` | 部署、接口兼容、验证说明 |
+| 目录                           | 职责                                                |
+| ------------------------------ | --------------------------------------------------- |
+| `src/config/`                  | 唯一后端地址配置及明确的应用配置                    |
+| `src/core/http.ts`             | 请求、统一业务信封、错误与取消语义                  |
+| `src/core/session.ts`          | Cookie 解析、携带、失效与清理                       |
+| `src/core/storage.ts`          | 后端实例与账号隔离的存储                            |
+| `src/core/urls.ts`             | API 和资源地址解析                                  |
+| `src/api/`                     | auth、models、tasks、resources、wallet 的接口和 DTO |
+| `src/adapters/open-ai-canvas/` | 生成入参、结果和模型能力的后端特有映射              |
+| `src/services/`                | 上传、生成编排、共享任务轮询、媒体保存              |
+| `src/stores/`                  | 跨页面状态和缓存失效                                |
+| `src/components/`              | 真实复用的表单、任务卡片、模型参数与媒体组件        |
+| `src/pages/`                   | 页面布局、交互、状态展示                            |
+| `src/styles/`                  | 集中设计变量与基础样式                              |
+| `docs/`                        | 部署、接口兼容、验证说明                            |
 
 依赖方向为页面 → store/service → API/适配器 → core → 后端。页面不得直接调用 `uni.request`、解析 Cookie、解析 `resultJson` 或自行计算最终账务。
 
@@ -111,7 +111,7 @@ export const backendConfig = Object.freeze({
 - 取消、上游取消确认和退款不是同一状态；提示必须以真实返回值为准。
 - 任务列表最多返回最近 100 条，无服务端历史分页。只在已加载集合筛选和统计，不能制造无限历史加载。
 - Web 产生的未知任务类型应安全展示基础信息，不误解析为首版支持类型。
-- 生成结果可查看、下载或复制，不等于已完成 Web 素材库业务入库。首版不承诺素材库关联或 Web 会话分组同步。
+- 小程序成功任务自动写入主项目个人 `/assets` 素材库，生成状态与素材同步状态分开。使用 Web 的 `generation_ + SHA256(materialize:taskId:outputIndex)` ID，先读取已有记录再单条 PUT；不得以全库替换实现同步。后台完成任务须读取详情后补同步，失败提供重试并保留成功结果。此关联不包含 Web 会话分组、画布或项目资产。
 
 ## 8. 积分
 

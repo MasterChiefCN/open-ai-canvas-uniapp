@@ -131,7 +131,15 @@ export type TextReplay = {
   finalText?: string;
   complete: boolean;
 };
-export type Resource = { id: string; mimeType: string; size: number };
+export type Resource = {
+  id: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
+  durationMs?: number;
+  status?: string;
+};
 export type ImageReference = {
   id: string;
   name: string;

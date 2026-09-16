@@ -6,17 +6,19 @@
 
 以下均位于 [上游基线源码](https://github.com/ddcat-ai/open-ai-canvas/tree/9868f5e8)。
 
-| 合同                     | 文件                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------- |
-| 账号、会话、功能开关     | `web/src/services/api/auth.ts`、`backend/internal/handler/auth.go`                    |
-| 业务信封                 | `web/src/services/api/request.ts`                                                     |
-| 目录两种形式与 available | `web/src/services/api/logical-models.ts`、`backend/internal/handler/model_catalog.go` |
-| 渠道模型能力             | `web/src/lib/model-capabilities.ts`                                                   |
-| 生成、资源引用、批次     | `web/src/services/api/generation-task.ts`                                             |
-| 视频 operation、输入计数 | `web/src/lib/model-selection.ts`                                                      |
-| 任务、sequence、安全日志 | `web/src/services/api/task-center.ts`                                                 |
-| 上传与资源签名           | `web/src/services/api/resources.ts`                                                   |
-| 钱包、兑换、分页         | `web/src/services/api/wallet.ts`、`backend/internal/handler/finance.go`               |
+| 合同                     | 文件                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 账号、会话、功能开关     | `web/src/services/api/auth.ts`、`backend/internal/handler/auth.go`                                                     |
+| 业务信封                 | `web/src/services/api/request.ts`                                                                                      |
+| 目录两种形式与 available | `web/src/services/api/logical-models.ts`、`backend/internal/handler/model_catalog.go`                                  |
+| 渠道模型能力             | `web/src/lib/model-capabilities.ts`                                                                                    |
+| 生成、资源引用、批次     | `web/src/services/api/generation-task.ts`                                                                              |
+| 视频 operation、输入计数 | `web/src/lib/model-selection.ts`                                                                                       |
+| 任务、sequence、安全日志 | `web/src/services/api/task-center.ts`                                                                                  |
+| 上传与资源签名           | `web/src/services/api/resources.ts`                                                                                    |
+| 单条素材入库、资源元数据 | `web/src/services/api/user-data.ts`、`backend/internal/handler/user_data.go`                                           |
+| 素材数据格式、生成 ID    | `web/src/lib/asset-record.ts`、`web/src/stores/use-asset-store.ts`、`web/src/services/generation-task-materializer.ts` |
+| 钱包、兑换、分页         | `web/src/services/api/wallet.ts`、`backend/internal/handler/finance.go`                                                |
 
 ## 方案核对结果
 
@@ -41,6 +43,10 @@ GET 由页面刷新或共享轮询再次查询；写操作没有通用自动重�
 
 参数面板支持目录声明的枚举/数值范围：size、quality、videoSeconds、vquality、count。切模型重设合法默认值，提交时重新校验 availability 和 capabilityProfiles 组合。范围最多展开 100 个值，不开放供应商高级参数。
 
-文本使用本地当前会话，无多对话目录。媒体详情支持预览、刷新签名和保存，尚未关联 Web 素材库。各供应商视频参数、首尾帧语义和媒体格式需按实际部署模型联调。
+文本使用本地当前会话，无多对话目录。媒体详情支持预览、刷新签名和保存。小程序成功任务通过原版 `GET /assets/:id`、`PUT /assets/:id` 单条同步个人素材库；文本使用 `data.content`，图片使用 `data.dataUrl`，视频使用 `data.url`。图片和视频必须带有效尺寸、字节数和具体 MIME，尺寸缺失时读取媒体信息，不伪造尺寸。
+
+素材 ID 与 Web 生成逻辑一致：`generation_` 加 `SHA256(materialize:taskId:outputIndex)`。已存在则不写回；失败重试先读再写，部分成功不会重复新建。持久地址采用当前 API 根下的 `/resources/:id/file` 和 `resource:<id>`，不把短期签名作为素材永久地址。旧结果只有外部 URL 时使用 `/resources/import`，请求携带固定 `X-Idempotency-Key`。任务列表的摘要没有完整 `inputJson/resultJson`（见 `backend/internal/app/task_output.go`），同步前读取详情并核对 `metadata.source=uniapp-wechat` 或本机任务记录。
+
+同步在小程序运行时执行；关闭期间完成的任务，在重新进入页面加载后补同步。同步失败与生成失败独立展示，429 遵循 Retry-After；不对其他业务写入增加通用重试。只有本地缓存保存成功记录，清缓存后无法区分“从未入库”与“已彻底删除”，此时可能恢复该任务素材。各供应商视频参数、首尾帧语义和媒体格式仍需按实际部署模型联调。
 
 升级后端须回归账号、两种目录、上传、三类生成、恢复和积分。字段变化集中调整 API/适配器，不能承诺不同协议仅需更换 URL。

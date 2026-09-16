@@ -396,7 +396,7 @@ function newConversation() {
         </view>
       </button>
       <view class="footer-note">
-        <view>任务在后台执行，可在任务页查看</view>
+        <view>生成完成后自动同步素材库，可在任务页查看状态</view>
         <view>最终消耗以积分账务为准</view>
       </view>
     </view>

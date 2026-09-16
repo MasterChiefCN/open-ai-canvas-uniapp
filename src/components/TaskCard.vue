@@ -2,6 +2,7 @@
 import type { Task } from '../types/backend';
 import { statusLabel } from '../adapters/open-ai-canvas/task-result';
 import TaskThumbnail from './TaskThumbnail.vue';
+import AssetSyncStatus from './AssetSyncStatus.vue';
 defineProps<{ task: Task; compact?: boolean }>();
 const labels: Record<string, string> = {
   canvas_text: '文本',
@@ -35,6 +36,7 @@ function open(id: string) {
         />
         <text>{{ Math.min(100, Math.max(0, task.progress || 0)) }}%</text>
       </view>
+      <AssetSyncStatus :task="task" />
       <view class="task-date">
         <text>{{ task.createdAt.replace('T', ' ').slice(0, 16) }}</text>
         <text v-if="!compact" class="detail-arrow">›</text>
