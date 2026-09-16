@@ -7,6 +7,7 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:mp-weixin": "uni build -p mp-weixin",
     "typecheck": "vue-tsc --noEmit",
+    "check:wxss": "node scripts/check-wxss.mjs",
     "test": "vitest run",
     "format": "prettier --write src tests docs package.json tsconfig.json vite.config.ts vitest.config.ts README.md THIRD_PARTY_NOTICES.md",
     "format:check": "prettier --check src tests docs package.json tsconfig.json vite.config.ts vitest.config.ts README.md THIRD_PARTY_NOTICES.md"

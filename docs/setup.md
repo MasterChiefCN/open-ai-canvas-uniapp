@@ -9,9 +9,12 @@ pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
 pnpm build:mp-weixin
+pnpm check:wxss
 ```
 
 不要混用包管理器和锁文件。`pnpm-workspace.yaml` 允许 esbuild 与 vue-demi 的安装构建脚本；core-js 的安装提示脚本关闭。不需要初始化数据库、BFF 或 uniCloud。
+
+`check:wxss` 使用微信开发者工具自带的原生样式编译器，默认寻找 Windows 常规安装路径；其他安装位置可通过 `WXSS_COMPILER` 指定编译器。检查开发产物可运行 `pnpm check:wxss dist/dev/mp-weixin`。它不会启动开发者工具或请求后端。uni-app 构建成功后仍应执行该检查，避免浏览器 CSS 语法进入 WXSS。
 
 ## 业务后端配置
 

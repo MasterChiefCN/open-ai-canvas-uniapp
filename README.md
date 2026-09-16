@@ -51,11 +51,14 @@ pnpm typecheck
 pnpm test
 pnpm build:mp-weixin
 pnpm format:check
+pnpm check:wxss
 ```
 
 测试覆盖 Cookie、URL、业务错误、旧响应隔离、金额、模型/生成合同、批次部分失败、文本去重和结果解析。测试使用本地模拟数据，不会发起真实模型生成或消耗兑换码。
 
 验收记录与待测项目见 [acceptance.md](docs/acceptance.md)。小程序编译通过不能代替微信运行与真机检查。
+
+`check:wxss` 需要本机微信开发者工具中的原生编译器，安装位置配置见 [部署说明](docs/setup.md)。它专门检查 uni-app 构建阶段未验证的 WXSS 语法。
 
 ## 架构
 

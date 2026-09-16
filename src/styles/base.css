@@ -65,9 +65,6 @@ button[disabled] {
   flex: 1;
   min-width: 0;
 }
-.stack > * + * {
-  margin-top: 20rpx;
-}
 .field {
   margin-top: 24rpx;
 }
