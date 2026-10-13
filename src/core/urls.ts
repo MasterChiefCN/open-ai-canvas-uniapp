@@ -22,3 +22,17 @@ export function resourceUrl(path: string, base = backendConfig.apiBaseUrl): stri
   if (!origin) throw new Error('后端地址无效');
   return path.startsWith('/') ? origin + path : base + '/' + path;
 }
+export function resourceIdFromUrl(
+  path: string,
+  base = backendConfig.apiBaseUrl,
+): string | undefined {
+  try {
+    const prefix = base + '/resources/';
+    const url = resourceUrl(path, base);
+    if (!url.startsWith(prefix)) return undefined;
+    const match = url.slice(prefix.length).match(/^([^/?#]+)\/file(?:[?#]|$)/);
+    return match ? decodeURIComponent(match[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}

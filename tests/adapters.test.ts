@@ -100,7 +100,7 @@ describe('capabilities and generation contracts', () => {
       prompt: 'sunrise',
       logicalModelId: 'logical',
       input: {
-        config: { size: '16:9', videoSeconds: 5 },
+        config: { size: '16:9', videoSeconds: '5' },
         capabilityOptions: { size: '16:9', videoSeconds: 5 },
         referenceImages: [{ storageKey: 'resource:r' }],
       },

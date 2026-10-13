@@ -90,7 +90,7 @@ export function syncReferenceAsset(record: UploadRecord): Promise<void> {
         if (kind !== 'audio') {
           let { width, height } = resource;
           if (!(Number.isFinite(width) && width! > 0 && Number.isFinite(height) && height! > 0)) {
-            const signed = await resourceApi.url(id);
+            const signed = await resourceApi.url(id, 'browser-process');
             assertEpoch(epoch);
             ({ width, height } = await mediaDimensions(kind, resourceUrl(signed.url)));
             assertEpoch(epoch);

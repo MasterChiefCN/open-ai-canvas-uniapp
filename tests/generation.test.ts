@@ -69,6 +69,20 @@ describe('batch submission', () => {
       storageKey: 'resource:r',
     };
     const media = { videos: [reference], audios: [{ ...reference, type: 'audio/mpeg' }] };
+    mocks.available.mockResolvedValue({
+      source: 'frontend',
+      models: [
+        {
+          id: video.id,
+          code: video.modelKey,
+          name: video.name,
+          capability: video.mode,
+          available: true,
+          capabilitySpec: video.spec,
+          defaultOptions: {},
+        },
+      ],
+    });
     mocks.create.mockResolvedValue({ id: 'accepted' });
     await generate(video, 'prompt', [], {}, [], media);
     expect(mocks.available).toHaveBeenCalledWith(
@@ -96,7 +110,7 @@ describe('batch submission', () => {
     expect(result.error).toBe('timeout');
     expect(mocks.create).toHaveBeenCalledTimes(2);
     expect(mocks.remember).toHaveBeenCalledWith({ id: 'accepted' });
-    expect(mocks.create.mock.calls[0][0].input.config.count).toBe(1);
+    expect(mocks.create.mock.calls[0][0].input.config.count).toBe('1');
     expect(mocks.create.mock.calls[0][0].input.metadata).toMatchObject({
       batchIndex: 0,
       batchCount: 3,
@@ -118,5 +132,52 @@ describe('batch submission', () => {
     expect((await generate(model, 'prompt', [], { count: 1 }, [])).tasks).toEqual([
       { id: 'accepted' },
     ]);
+  });
+  it('uses fresh capabilities when the same model changes after selection', async () => {
+    const selected: Model = {
+      ...model,
+      mode: 'text',
+      spec: {},
+      rawCapabilities: {
+        text: {
+          streaming: true,
+          references: { maxImages: 0, maxImageBytes: 0, promptMaxChars: 1000 },
+        },
+      },
+    };
+    const current = {
+      ...selected,
+      logicalModelId: undefined,
+      channelId: 'c1',
+      protocol: 'text-protocol',
+      id: 'c1:text1',
+    };
+    mocks.available.mockResolvedValue({
+      source: 'system',
+      channels: [
+        {
+          id: 'c1',
+          name: '',
+          models: [
+            {
+              id: 'text1',
+              modelKey: current.modelKey,
+              displayName: current.name,
+              capability: 'text',
+              available: true,
+              protocol: current.protocol,
+              capabilityConfig: { text: { ...current.rawCapabilities!.text, streaming: false } },
+            },
+          ],
+        },
+      ],
+    });
+    mocks.create.mockResolvedValue({ id: 'accepted' });
+    await generate(current, 'prompt', [], {}, []);
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({ textOptions: { stream: false, thinking: false } }),
+      }),
+    );
   });
 });

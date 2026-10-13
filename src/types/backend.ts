@@ -4,16 +4,28 @@ export type User = {
   username: string;
   displayName: string;
   email?: string;
+  phone?: string;
+  avatarUrl?: string;
+};
+export type VerificationMethod = 'sms' | 'email' | 'sms_email';
+export type VerificationPolicy = {
+  smsLogin: boolean;
+  emailLogin: boolean;
+  smsRegistration: boolean;
+  emailRegistration: boolean;
+  smsAndEmailRegistration: boolean;
 };
 export type AuthSettings = {
   firstUser: boolean;
   registrationEnabled: boolean;
   emailEnabled: boolean;
   emailCodeRequired: boolean;
-};
+  agreementTitle?: string;
+  agreementContent?: string;
+} & VerificationPolicy;
 export type Session = {
   user: User | null;
-  runtimeLimits?: { activeTaskLimit: number; resourceUploadMB: number };
+  runtimeLimits?: { activeTaskLimit: number; resourceUploadMB: number; storedFileGB?: number };
   features?: {
     creditsEnabled?: boolean;
     taskCenterEnabled?: boolean;
@@ -45,8 +57,15 @@ export type ChannelCapability = {
   text?: { streaming?: boolean; references: References };
   image?: {
     references: References;
-    size: { parameter: string; values: string[]; default: string };
+    size: {
+      parameter: string;
+      values: string[];
+      default: string;
+      allowCustom?: boolean;
+      presets?: Array<{ size: string; tier: string; ratio: string; width: number; height: number }>;
+    };
     quality: { supported: boolean; values: string[]; default: string };
+    transparentBackground?: { supported: boolean; default: boolean };
     maxOutputs: number;
   };
   video?: {
@@ -58,6 +77,8 @@ export type ChannelCapability = {
     resolutions: string[];
     defaultResolution: string;
     operations: string[];
+    generateAudio?: { supported: boolean; default: boolean };
+    watermark?: { supported: boolean; default: boolean };
   };
 };
 type References = {
@@ -86,6 +107,7 @@ export type Catalog = {
       available: boolean;
       protocol?: string;
       capabilityConfig?: ChannelCapability;
+      defaultOptions?: Record<string, unknown>;
     }>;
   }>;
 };
@@ -115,6 +137,14 @@ export type Task = {
   operation?: string;
   progress?: number;
   stage?: string;
+  mediaStage?: 'download' | 'upload' | 'local_save' | 'register' | 'completed' | 'checkpoint';
+  canRecoverMedia?: boolean;
+  previewUrl?: string;
+  previewKind?: string;
+  previewPosterUrl?: string;
+  agentRunId?: string;
+  generationId?: string;
+  creationSubmissionId?: string;
   inputJson?: string;
   resultJson?: string;
   textDraft?: string;
@@ -148,6 +178,20 @@ export type Resource = {
   height?: number;
   durationMs?: number;
   status?: string;
+};
+export type ResourceAccessPurpose = 'display' | 'download' | 'browser-process';
+export type ResourceAccessVariant = 'original' | 'playback' | 'thumbnail';
+export type ResourceAccess = {
+  resourceId: string;
+  requestedVariant: ResourceAccessVariant;
+  actualVariant: ResourceAccessVariant;
+  url: string;
+  delivery: 'cdn' | 'origin' | 'platform-local' | 'platform-proxy';
+  issuedAt: string;
+  expiresAt?: string | null;
+  refreshAt: string;
+  revision: string;
+  fallbackReason?: string;
 };
 export type ImageReference = {
   id: string;

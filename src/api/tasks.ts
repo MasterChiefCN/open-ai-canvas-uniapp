@@ -12,6 +12,7 @@ export const taskApi = {
   create: (input: object) => request<Task>('/tasks', 'POST', input),
   cancel: (id: string) => request<Task>(path(id) + '/cancel', 'POST'),
   retry: (id: string) => request<Task>(path(id) + '/retry', 'POST'),
+  recover: (id: string) => request<Task>(path(id) + '/recover-media', 'POST'),
   logs: async (id: string): Promise<TaskLog[]> =>
     safeLogs(
       await request<

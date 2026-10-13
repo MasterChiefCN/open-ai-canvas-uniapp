@@ -39,8 +39,8 @@ export async function generate(
       options,
     }),
   );
-  if (!available.some((item) => item.id === model.id))
-    throw new Error('当前模型或参数组合暂不可用，请刷新模型后重试');
+  const currentModel = available.find((item) => item.id === model.id);
+  if (!currentModel) throw new Error('当前模型或参数组合暂不可用，请刷新模型后重试');
   const completed: Task[] = [];
   let error = '';
   for (let batchIndex = 0; batchIndex < count; batchIndex++) {
@@ -52,7 +52,7 @@ export async function generate(
       };
       const task = await taskApi.create(
         generationPayload(
-          model,
+          currentModel,
           prompt,
           references,
           singleOptions,

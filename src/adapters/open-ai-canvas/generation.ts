@@ -15,10 +15,14 @@ export function generationPayload(
     videos: media.videos.length,
     audios: media.audios.length,
   });
+  // Go providerConfig 的数量、时长及开关为字符串，能力匹配参数仍保留原始类型。
+  const providerOptions = Object.fromEntries(
+    Object.entries(options).map(([key, value]) => [key, String(value)]),
+  );
   const config = model.logicalModelId
-    ? { ...options }
+    ? providerOptions
     : {
-        ...options,
+        ...providerOptions,
         channelId: model.channelId,
         interfaceType: model.protocol,
         model: model.modelKey,
@@ -44,7 +48,14 @@ export function generationPayload(
       referenceVideos: media.videos,
       referenceAudios: media.audios,
       textHistory: history,
-      ...(model.mode === 'text' ? { textOptions: { stream: true, thinking: false } } : {}),
+      ...(model.mode === 'text'
+        ? {
+            textOptions: {
+              stream: model.rawCapabilities?.text?.streaming !== false,
+              thinking: false,
+            },
+          }
+        : {}),
       metadata: { source: clientSource(), ...metadata },
     },
   };

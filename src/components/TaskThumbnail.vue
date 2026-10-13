@@ -5,7 +5,13 @@ import { parseResult } from '../adapters/open-ai-canvas/task-result';
 import { mediaUrl } from '../services/media';
 import UiIcon from './UiIcon.vue';
 const props = defineProps<{ task: Task }>();
-const media = computed(() => parseResult(props.task).media.find((item) => item.kind === 'image'));
+const media = computed(
+  () =>
+    parseResult(props.task).media.find((item) => item.kind === 'image') ||
+    (props.task.previewKind === 'image' && props.task.previewUrl
+      ? { kind: 'image' as const, url: props.task.previewUrl }
+      : undefined),
+);
 const url = ref('');
 let revision = 0;
 watch(
@@ -15,7 +21,7 @@ watch(
     url.value = '';
     if (!value) return;
     try {
-      const result = await mediaUrl(value);
+      const result = await mediaUrl(value, 'display', 'thumbnail');
       if (captured === revision) url.value = result;
     } catch {
       /* 缩略图失败仍保留任务详情入口 */

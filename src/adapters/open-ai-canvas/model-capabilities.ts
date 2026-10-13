@@ -1,4 +1,18 @@
 import type { Catalog, Model, Mode, CapabilitySpec } from '../../types/backend';
+// 后端 imageSizeOptionConstraint 对仅含 * 的旧配置发布这组标准选项。
+const standardImageSizes = [
+  '1:1',
+  '3:2',
+  '2:3',
+  '4:3',
+  '3:4',
+  '16:9',
+  '21:9',
+  '9:16',
+  '1024x1024',
+  '1536x1024',
+  '1024x1536',
+];
 export const isMode = (value: string): value is Mode => ['text', 'image', 'video'].includes(value);
 export function normalizeCatalog(catalog: Catalog): Model[] {
   if (catalog.source === 'frontend')
@@ -37,9 +51,18 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
         const defaults: Record<string, unknown> = {};
         if (mode === 'image' && raw?.image) {
           const image = raw.image;
-          if (image.size.parameter !== 'none' && image.size.values.length) {
+          if (image.size.parameter !== 'none') {
+            const sizes = image.size.values.filter((v) => v !== '*');
+            if (image.size.allowCustom) {
+              if (!sizes.length) sizes.push(...standardImageSizes);
+              const defaultSize = m.defaultOptions?.size || image.size.default;
+              if (typeof defaultSize === 'string' && defaultSize && defaultSize !== '*')
+                sizes.push(defaultSize);
+              if (image.size.parameter === 'size')
+                sizes.push(...(image.size.presets || []).map((preset) => preset.size));
+            }
             spec.options!.size = {
-              values: image.size.values.filter((v) => v !== '*'),
+              values: [...new Set(sizes)],
             };
             defaults.size = image.size.default;
           }
@@ -52,6 +75,10 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
             max: Math.min(15, image.maxOutputs),
             step: 1,
           };
+          if (image.transparentBackground?.supported) {
+            spec.options!.transparentBackground = { values: [false, true] };
+            defaults.transparentBackground = image.transparentBackground.default;
+          }
         }
         if (mode === 'video' && raw?.video) {
           const video = raw.video;
@@ -68,6 +95,14 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
             spec.options!.videoSeconds = video.duration;
             defaults.videoSeconds = video.duration.default;
           }
+          if (video.generateAudio?.supported) {
+            spec.options!.videoGenerateAudio = { values: [false, true] };
+            defaults.videoGenerateAudio = video.generateAudio.default;
+          }
+          if (video.watermark?.supported) {
+            spec.options!.videoWatermark = { values: [false, true] };
+            defaults.videoWatermark = video.watermark.default;
+          }
         }
         return [
           {
@@ -78,7 +113,7 @@ export function normalizeCatalog(catalog: Catalog): Model[] {
             channelId: channel.id,
             protocol: m.protocol,
             spec,
-            defaults,
+            defaults: { ...defaults, ...m.defaultOptions },
             rawCapabilities: raw,
             promptMaxChars: capability.references.promptMaxChars,
             maxImageBytes: capability.references.maxImageBytes,
@@ -95,6 +130,9 @@ export const optionLabels: Record<string, string> = {
   videoSeconds: '视频时长（秒）',
   vquality: '视频分辨率',
   count: '生成数量',
+  transparentBackground: '透明背景',
+  videoGenerateAudio: '同步生成音频',
+  videoWatermark: '视频水印',
 };
 export function parameterFields(model?: Model) {
   return Object.entries(model?.spec.options || {})
@@ -115,6 +153,16 @@ export function parameterFields(model?: Model) {
         key,
         label: optionLabels[key],
         values: values as Array<string | number | boolean>,
+        labels: values.map((value) => {
+          if (typeof value === 'boolean') return value ? '开启' : '关闭';
+          const preset =
+            key === 'size'
+              ? model?.rawCapabilities?.image?.size.presets?.find((item) => item.size === value)
+              : undefined;
+          return preset
+            ? `${preset.tier.toUpperCase()} · ${preset.ratio} · ${value}`
+            : String(value);
+        }),
       };
     })
     .filter((field) => field.values.length);

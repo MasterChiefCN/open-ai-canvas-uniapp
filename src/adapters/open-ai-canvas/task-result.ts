@@ -4,6 +4,22 @@ export type MediaResult = {
   storageKey?: string;
   url?: string;
 };
+// 与新版 Web 的结构化文本结果合同一致，供预览和素材入库共同使用。
+export function normalizeBackendText(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value))
+    return value.map(normalizeBackendText).filter(Boolean).join('') || undefined;
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    for (const key of ['text', 'content', 'output_text', 'value']) {
+      const text = normalizeBackendText(record[key]);
+      if (text !== undefined) return text;
+    }
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
 export function parseResult(task: Task): {
   text: string;
   media: MediaResult[];
@@ -22,14 +38,19 @@ export function parseResult(task: Task): {
       media.push({
         kind,
         storageKey: typeof item.storageKey === 'string' ? item.storageKey : undefined,
-        url: typeof item.dataUrl === 'string' ? item.dataUrl : undefined,
+        url:
+          typeof item.dataUrl === 'string'
+            ? item.dataUrl
+            : typeof item.url === 'string'
+              ? item.url
+              : undefined,
       });
     };
     if (task.type === 'canvas_image' && Array.isArray(result.images))
       result.images.forEach((item: unknown) => add(item, 'image'));
     if (task.type === 'canvas_video') add(result.video, 'video');
     return {
-      text: typeof result.text === 'string' ? result.text : task.textDraft || '',
+      text: normalizeBackendText(result.text) ?? task.textDraft ?? '',
       media,
     };
   } catch {
@@ -52,10 +73,38 @@ export function mergeText(state: { after: number; text: string }, replay: TextRe
   return { after, text };
 }
 export const activeTask = (task: Task) => task.status === 'queued' || task.status === 'running';
-export const canRetry = (task: Task) =>
-  task.status === 'failed' &&
-  task.errorCode !== 'sensitive_words_detected' &&
-  !/审核|敏感|违规|moderation|content.policy/i.test(task.error || '');
+export function canRetry(task: Task) {
+  let source: unknown;
+  try {
+    source = JSON.parse(task.inputJson || '{}')?.metadata?.source;
+  } catch {
+    return false;
+  }
+  return (
+    ['canvas_text', 'canvas_image', 'canvas_video'].includes(task.type) &&
+    ['failed', 'cancelled'].includes(task.status) &&
+    !task.canRecoverMedia &&
+    task.providerCancelStatus !== 'requested' &&
+    task.billing?.status !== 'uncertain' &&
+    !task.agentRunId &&
+    !task.generationId &&
+    !task.creationSubmissionId &&
+    source !== 'cloud_agent' &&
+    !task.operation?.startsWith('cloud_agent') &&
+    task.errorCode !== 'sensitive_words_detected' &&
+    !/审核|敏感|违规|moderation|content.policy/i.test(task.error || '')
+  );
+}
+export const canRecoverMedia = (task: Task) =>
+  task.status === 'failed' && task.canRecoverMedia === true;
+export const mediaStageLabel: Record<string, string> = {
+  download: '下载生成结果',
+  upload: '保存到对象存储',
+  local_save: '保存到本地存储',
+  register: '登记作品资源',
+  completed: '作品已保存',
+  checkpoint: '等待恢复作品保存',
+};
 export const statusLabel: Record<string, string> = {
   queued: '排队中',
   running: '生成中',

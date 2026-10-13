@@ -1,17 +1,39 @@
 import { resourceApi } from '../api/resources';
 import { albumPermissionMessage } from '../core/runtime';
-import { resourceUrl } from '../core/urls';
+import { resourceUrl, resourceIdFromUrl } from '../core/urls';
 import { assertEpoch, requestEpoch } from '../core/http';
 import type { MediaResult } from '../adapters/open-ai-canvas/task-result';
-export async function mediaUrl(media: MediaResult) {
-  if (media.storageKey?.startsWith('resource:'))
-    return resourceUrl((await resourceApi.url(media.storageKey.slice(9))).url);
-  if (media.url) return resourceUrl(media.url);
+import type { ResourceAccessPurpose, ResourceAccessVariant } from '../types/backend';
+export async function mediaAccess(
+  media: MediaResult,
+  purpose: ResourceAccessPurpose = 'display',
+  variant?: ResourceAccessVariant,
+): Promise<{ url: string; refreshAt?: string }> {
+  const id = media.storageKey?.startsWith('resource:')
+    ? media.storageKey.slice(9)
+    : resourceIdFromUrl(media.url || '');
+  if (id) {
+    const access = await resourceApi.url(
+      id,
+      purpose,
+      variant || (purpose === 'display' && media.kind === 'video' ? 'playback' : 'original'),
+    );
+    return { url: resourceUrl(access.url), refreshAt: access.refreshAt };
+  }
+  if (media.url) return { url: resourceUrl(media.url) };
   throw new Error('结果尚无可用媒体资源');
+}
+export async function mediaUrl(
+  media: MediaResult,
+  purpose: ResourceAccessPurpose = 'display',
+  variant?: ResourceAccessVariant,
+) {
+  return (await mediaAccess(media, purpose, variant)).url;
 }
 export async function saveMedia(media: MediaResult) {
   const epoch = requestEpoch();
-  const url = await mediaUrl(media);
+  const url = await mediaUrl(media, 'download', 'original');
+  assertEpoch(epoch);
   const path = await new Promise<string>((resolve, reject) =>
     uni.downloadFile({
       url,

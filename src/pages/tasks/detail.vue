@@ -7,7 +7,13 @@ import { useTasks } from '../../stores/tasks';
 import { useAuth } from '../../stores/auth';
 import { useWallet } from '../../stores/wallet';
 import { usePage } from '../../composables/usePage';
-import { parseResult, statusLabel, canRetry } from '../../adapters/open-ai-canvas/task-result';
+import {
+  parseResult,
+  statusLabel,
+  canRetry,
+  canRecoverMedia,
+  mediaStageLabel,
+} from '../../adapters/open-ai-canvas/task-result';
 import { watchTasks, unwatchTasks } from '../../services/task-polling';
 import { storage } from '../../core/storage';
 import type { TaskLog, Mode } from '../../types/backend';
@@ -40,7 +46,7 @@ const { error, loading, refresh } = usePage(
   },
 );
 onPullDownRefresh(refresh);
-async function action(kind: 'cancel' | 'retry') {
+async function action(kind: 'cancel' | 'retry' | 'recover') {
   if (busy.value) return;
   busy.value = true;
   error.value = '';
@@ -53,8 +59,15 @@ async function action(kind: 'cancel' | 'retry') {
       id.value = value.id;
       if (visible) watchTasks('detail', [value.id]);
       notice.value = '已提交重试任务';
+    } else if (kind === 'recover') {
+      if (visible) watchTasks('detail', [value.id]);
+      notice.value = '已请求恢复原任务的作品保存，等待服务端处理；账务状态以积分流水为准。';
     } else notice.value = '取消请求已处理；上游确认状态与积分退款请以任务和账务记录为准。';
-    await useWallet().balance();
+    try {
+      await useWallet().balance();
+    } catch {
+      notice.value += ' 积分暂未刷新，请稍后核对。';
+    }
   } catch (failure) {
     error.value = failure instanceof Error ? failure.message : '操作失败';
   } finally {
@@ -97,6 +110,12 @@ function reuse() {
           backgroundColor="#303746"
         />
         <view v-if="task.error" class="error">{{ task.error }}</view>
+        <view v-if="task.mediaStage" class="muted">
+          作品保存：{{ mediaStageLabel[task.mediaStage] || task.mediaStage }}
+        </view>
+        <view v-if="canRecoverMedia(task)" class="notice">
+          作品已生成，保存未完成。可恢复原任务的作品保存，账务由服务端核对。
+        </view>
         <view v-if="task.providerCancelStatus" class="notice">
           上游取消状态：{{ task.providerCancelStatus }}
         </view>
@@ -127,6 +146,14 @@ function reuse() {
         </button>
         <button v-if="canRetry(task)" class="secondary" :disabled="busy" @tap="action('retry')">
           重试任务
+        </button>
+        <button
+          v-if="canRecoverMedia(task)"
+          class="secondary"
+          :disabled="busy"
+          @tap="action('recover')"
+        >
+          重试保存作品
         </button>
         <button
           v-if="['canvas_text', 'canvas_image', 'canvas_video'].includes(task.type)"

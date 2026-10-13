@@ -1,5 +1,6 @@
 import type { Task } from '../../types/backend';
 import { sha256 } from '../../core/sha256';
+import { normalizeBackendText } from './task-result';
 
 export type AssetOutput =
   | { index: number; kind: 'text'; content: string }
@@ -32,7 +33,7 @@ export function taskAssetOutputs(task: Task): AssetOutput[] {
     throw new Error('生成结果格式异常，无法同步素材');
   }
   if (task.type === 'canvas_text') {
-    const content = typeof result.text === 'string' ? result.text : task.textDraft;
+    const content = normalizeBackendText(result.text) ?? task.textDraft;
     if (!content?.trim()) throw new Error('生成结果缺少文本内容');
     return [{ index: 0, kind: 'text', content }];
   }

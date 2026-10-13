@@ -107,7 +107,7 @@ async function buildAsset(task: Task, output: AssetOutput, epoch: number): Promi
   let width = positive(resource.width) ? resource.width : media.width;
   let height = positive(resource.height) ? resource.height : media.height;
   if (!positive(width) || !positive(height)) {
-    const { url } = await resourceApi.url(resource.id);
+    const { url } = await resourceApi.url(resource.id, 'browser-process');
     assertEpoch(epoch);
     const dimensions = await mediaDimensions(output.kind, resourceUrl(url));
     assertEpoch(epoch);

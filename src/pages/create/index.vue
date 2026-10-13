@@ -481,12 +481,17 @@ function newConversation() {
             <view v-for="field in fields" :key="field.key" class="field">
               <text class="label">{{ field.label }}</text>
               <picker
-                :range="field.values"
+                :range="field.labels"
                 :value="Math.max(0, field.values.indexOf(options[field.key] as string))"
                 :disabled="submitting"
                 @change="selectOption(field.key, field.values, $event)"
               >
-                <view class="select">{{ options[field.key] }} ⌄</view>
+                <view class="select">
+                  {{
+                    field.labels[Math.max(0, field.values.indexOf(options[field.key] as string))]
+                  }}
+                  ⌄
+                </view>
               </picker>
             </view>
           </scroll-view>

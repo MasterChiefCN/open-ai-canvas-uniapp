@@ -15,7 +15,7 @@ export function safeLogs(
     const stage =
       source
         .match(
-          /(?:^|[^a-z0-9_])(queued|submitting|submitted|generating|submission_unknown|processing|completed|succeeded|failed|cancelled)(?:$|[^a-z0-9_])/i,
+          /(?:^|[^a-z0-9_])(queued|submitting|submitted|generating|submission_unknown|processing|download|upload|local_save|register|checkpoint|completed|succeeded|failed|cancelled)(?:$|[^a-z0-9_])/i,
         )?.[1]
         ?.toLowerCase() || 'backend_event';
     return {

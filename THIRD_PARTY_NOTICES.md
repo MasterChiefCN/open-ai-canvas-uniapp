@@ -4,7 +4,11 @@
 
 ## Open AI Canvas
 
-Source: https://github.com/ddcat-ai/open-ai-canvas/tree/9868f5e8
+Current source: https://github.com/ddcat-ai/open-ai-canvas/tree/4c1d2b4012cfeeb301fdcdd2949e782ea5aca351
+
+Historical source: https://github.com/ddcat-ai/open-ai-canvas/tree/9868f5e8
+
+新版验证策略、资源访问合同及结构化文本归一化参考上游源码，适配模块保留来源说明。
 
 MIT License
 
